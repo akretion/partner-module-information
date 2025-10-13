@@ -1,9 +1,10 @@
 import logging
-from datetime import datetime
 
-import requests
+from github import Auth, Github
 
 from odoo import fields, models
+
+from ..tools import naive_dt
 
 # from odoo.tools import date_utils
 
@@ -33,80 +34,39 @@ class ModuleRepo(models.Model):
                 eta += 60 * 60
 
     def import_pr(self):
-        git_token = (
+        github_token = (
             self.env["ir.config_parameter"]
             .sudo()
             .get_param("module.info.pull.request.git.token")
         )
+        if github_token:
+            g = Github(auth=Auth.Token(github_token))
+        else:
+            g = Github()
         for repo in self:
-            if repo.date_last_updated:
-                # call api search, sort by date desc
-                # stop pagination when date correspond to date_last_updated
-                page = 1
-                prs = []
-                while True:
-                    url = (
-                        f"https://api.github.com/repos/{repo.organization}"
-                        f"/{repo.name}/pulls?state=all&per_page=10&page={page}"
-                        "&sort=updated&direction=desc"
-                    )
-                    response = requests.get(
-                        url,
-                        headers={"authorization": f"Bearer {git_token}"},
-                        timeout=120,
-                    )
-                    if len(response.json()):
-                        prs.extend(response.json())
-                        if (
-                            datetime.strptime(
-                                response.json()[-1]["updated_at"], "%Y-%m-%dT%H:%M:%SZ"
-                            )
-                            < repo.date_last_updated
-                        ):
-                            break
-                    page += 1
-            else:
-                # Init of PR's repo
-                # Call api pulls to get all openned pr
-                page = 1
-                result = 1
-                prs = []
-                while result:
-                    url = (
-                        f"https://api.github.com/repos/{repo.organization}"
-                        f"/{repo.name}/pulls?per_page=40&page={page}"
-                    )
-                    response = requests.get(
-                        url,
-                        headers={"authorization": f"Bearer {git_token}"},
-                        timeout=120,
-                    )
-                    if len(response.json()):
-                        prs.extend(response.json())
-                    result = len(response.json())
-                    page += 1
-
-            if prs:
-                max_updated = prs[0]["updated_at"]
-            for pr in prs:
+            gh_repo = g.get_repo(f"{repo.organization}/{repo.name}")
+            state = "all" if repo.date_last_updated else "open"
+            last_updated = repo.date_last_updated
+            new_last_updated = None
+            for pr in gh_repo.get_pulls(state=state, sort="updated", direction="desc"):
+                if last_updated and last_updated >= naive_dt(pr.updated_at):
+                    # stop as this PR have been already processed
+                    break
+                if not new_last_updated:
+                    new_last_update = naive_dt(pr.updated_at)
                 self._create_or_update_pr(pr)
-                max_updated = max(pr["updated_at"], max_updated)
-            if prs:
-                repo.date_last_updated = datetime.strptime(
-                    max_updated, "%Y-%m-%dT%H:%M:%SZ"
-                ).strftime("%Y-%m-%d")
+            if new_last_updated:
+                repo.date_last_updated = new_last_update
 
-    def _create_or_update_pr(self, pr_vals):
+    def _create_or_update_pr(self, gh_pr):
         self.ensure_one()
         pr_obj = self.env["pull.request"]
-        pr = pr_obj.search(
-            [("number", "=", pr_vals["number"]), ("repo_id", "=", self.id)]
-        )
+        pr = pr_obj.search([("number", "=", gh_pr.number), ("repo_id", "=", self.id)])
         if pr:
-            vals = pr_obj._prepare_update_pr(pr_vals)
+            vals = pr_obj._prepare_update_pr(gh_pr)
             pr.write(vals)
         else:
-            vals = pr_obj._prepare_create_pr(self, pr_vals)
+            vals = pr_obj._prepare_create_pr(self, gh_pr)
             pr = pr_obj.create(vals)
         pr._update_module_version()
 
