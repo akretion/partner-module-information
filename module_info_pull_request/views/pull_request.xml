@@ -69,6 +69,7 @@
             <search string="Pull Request">
                 <field name="author_user_id" />
                 <field name="module_ids" />
+                <field name="repo_id" />
                 <filter
                     name="opened"
                     string="Opened PR"
