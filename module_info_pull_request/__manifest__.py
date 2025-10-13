@@ -18,5 +18,5 @@
         "views/res_users.xml",
     ],
     "installable": True,
-    "external_dependencies": {"python": ["pyyaml"]},
+    "external_dependencies": {"python": ["pyyaml", "PyGithub"]},
 }

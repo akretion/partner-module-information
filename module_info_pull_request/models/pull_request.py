@@ -1,16 +1,13 @@
 import logging
 import re
-from datetime import datetime
 
 import requests
 
 from odoo import api, fields, models
 
+from ..tools import naive_dt
+
 _logger = logging.getLogger(__name__)
-
-
-def format_github_datetime(value):
-    return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
 
 
 class PullRequest(models.Model):
@@ -95,29 +92,24 @@ class PullRequest(models.Model):
 
     def _prepare_update_pr(self, pr):
         vals = {
-            "date_updated": format_github_datetime(pr["updated_at"]),
-            "title": pr["title"],
-            "state": pr["state"],
+            "date_updated": naive_dt(pr.updated_at),
+            "title": pr.title,
+            "state": pr.state,
+            "date_closed": naive_dt(pr.closed_at),
         }
-        if pr.get("closed_at", False):
-            vals.update(
-                {
-                    "date_closed": format_github_datetime(pr["closed_at"]),
-                }
-            )
         return vals
 
     def _prepare_create_pr(self, repo, pr):
         modules = {m.name: m.id for m in repo.module_ids}
         vals = {
             "repo_id": repo.id,
-            "number": pr["number"],
-            "date_open": format_github_datetime(pr["created_at"]),
-            "module_ids": [(6, 0, self._get_module_from_pr(pr["diff_url"], modules))],
-            "version_id": self.env["odoo.version"]._get_id(pr["base"]["ref"][:4]),
-            "url": pr["html_url"],
-            "author": pr["user"]["login"],
-            "orga": pr["head"]["user"]["login"],
+            "number": pr.number,
+            "date_open": naive_dt(pr.created_at),
+            "module_ids": [(6, 0, self._get_module_from_pr(pr.diff_url, modules))],
+            "version_id": self.env["odoo.version"]._get_id(pr.base.ref[:4]),
+            "url": pr.html_url,
+            "author": pr.user.login,
+            "orga": pr.head.user.login,
         }
         vals.update(self._prepare_update_pr(pr))
         return vals
