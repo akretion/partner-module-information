@@ -9,6 +9,10 @@ from odoo import api, fields, models
 _logger = logging.getLogger(__name__)
 
 
+def format_github_datetime(value):
+    return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+
+
 class PullRequest(models.Model):
     _name = "pull.request"
 
@@ -89,56 +93,34 @@ class PullRequest(models.Model):
                 module_ids.append(module_id)
         return module_ids
 
-    def create_or_update_pr(self, pr, repo, modules_info, odoo_version):
-        vals = {}
-        pr_obj = self.search(
-            [("number", "=", pr["number"]), ("repo_id", "=", repo[0].id)]
-        )
-        if pr_obj and pr_obj.state == "open":
-            # Closed PR has no update
-            # PR exist in bdd and is open
-
+    def _prepare_update_pr(self, pr):
+        vals = {
+            "date_updated": format_github_datetime(pr["updated_at"]),
+            "title": pr["title"],
+            "state": pr["state"],
+        }
+        if pr.get("closed_at", False):
             vals.update(
                 {
-                    "date_updated": datetime.strptime(
-                        pr["updated_at"], "%Y-%m-%dT%H:%M:%SZ"
-                    ).strftime("%Y-%m-%d %H:%M:%S")
+                    "date_closed": format_github_datetime(pr["closed_at"]),
                 }
             )
-            if pr.get("closed_at", False):
-                vals.update(
-                    {
-                        "date_closed": datetime.strptime(
-                            pr["closed_at"], "%Y-%m-%dT%H:%M:%SZ"
-                        ).strftime("%Y-%m-%d %H:%M:%S"),
-                        "state": pr["state"],
-                    }
-                )
-            pr_obj.write(vals)
-            pr_obj._update_module_version()
+        return vals
 
-        elif not pr_obj and pr["state"] == "open":
-            # PR not exist in bdd
-            vals.update(
-                {
-                    "title": pr["title"],
-                    "number": pr["number"],
-                    "repo_id": repo[0].id,
-                    "date_open": datetime.strptime(
-                        pr["created_at"], "%Y-%m-%dT%H:%M:%SZ"
-                    ).strftime("%Y-%m-%d %H:%M:%S"),
-                    "module_ids": [
-                        (6, 0, self._get_module_from_pr(pr["diff_url"], modules_info))
-                    ],
-                    "version_id": odoo_version.get(pr["base"]["ref"][:4], ""),
-                    "state": pr["state"],
-                    "url": pr["html_url"],
-                    "author": pr["user"]["login"],
-                    "orga": pr["head"]["user"]["login"],
-                }
-            )
-            pr_obj = pr_obj.create(vals)
-            pr_obj._update_module_version()
+    def _prepare_create_pr(self, repo, pr):
+        modules = {m.name: m.id for m in repo.module_ids}
+        vals = {
+            "repo_id": repo.id,
+            "number": pr["number"],
+            "date_open": format_github_datetime(pr["created_at"]),
+            "module_ids": [(6, 0, self._get_module_from_pr(pr["diff_url"], modules))],
+            "version_id": self.env["odoo.version"]._get_id(pr["base"]["ref"][:4]),
+            "url": pr["html_url"],
+            "author": pr["user"]["login"],
+            "orga": pr["head"]["user"]["login"],
+        }
+        vals.update(self._prepare_update_pr(pr))
+        return vals
 
     def _update_module_version(self):
         # manage module version depending on PRs
@@ -167,7 +149,7 @@ class PullRequest(models.Model):
             # if there is no other PR
             module_versions = self.env["module.version"].search(
                 [
-                    ("module_id", "=", self.module_ids.ids),
+                    ("module_id", "in", self.module_ids.ids),
                     ("version_id", "=", self.version_id.id),
                     ("state", "=", "pending"),
                 ]

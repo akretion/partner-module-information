@@ -38,9 +38,7 @@ class ModuleRepo(models.Model):
             .sudo()
             .get_param("module.info.pull.request.git.token")
         )
-        odoo_version_dct = {v.name: v.id for v in self.env["odoo.version"].search([])}
         for repo in self:
-            modules = {m.name: m.id for m in repo.module_ids}
             if repo.date_last_updated:
                 # call api search, sort by date desc
                 # stop pagination when date correspond to date_last_updated
@@ -91,16 +89,26 @@ class ModuleRepo(models.Model):
             if prs:
                 max_updated = prs[0]["updated_at"]
             for pr in prs:
-                if not odoo_version_dct.get(pr["base"]["ref"][:4], False):
-                    continue
-                self.env["pull.request"].create_or_update_pr(
-                    pr, repo, modules, odoo_version_dct
-                )
+                self._create_or_update_pr(pr)
                 max_updated = max(pr["updated_at"], max_updated)
             if prs:
                 repo.date_last_updated = datetime.strptime(
                     max_updated, "%Y-%m-%dT%H:%M:%SZ"
                 ).strftime("%Y-%m-%d")
+
+    def _create_or_update_pr(self, pr_vals):
+        self.ensure_one()
+        pr_obj = self.env["pull.request"]
+        pr = pr_obj.search(
+            [("number", "=", pr_vals["number"]), ("repo_id", "=", self.id)]
+        )
+        if pr:
+            vals = pr_obj._prepare_update_pr(pr_vals)
+            pr.write(vals)
+        else:
+            vals = pr_obj._prepare_create_pr(self, pr_vals)
+            pr = pr_obj.create(vals)
+        pr._update_module_version()
 
     def get_pr_state(self):
         self.import_pr()
