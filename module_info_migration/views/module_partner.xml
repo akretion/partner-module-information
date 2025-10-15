@@ -6,7 +6,6 @@
         <field name="inherit_id" ref="module_info_partner.module_partner_tree_view" />
         <field name="arch" type="xml">
             <field name="version_id" position="after">
-                <field name="task_ids" invisible="1" />
                 <field name="migration_status" />
                 <button
                     name="open_pull_request"
@@ -15,6 +14,7 @@
                     title="Open PR"
                     attrs="{'invisible': [('migration_status', '!=', 'ongoing_pr')]}"
                 />
+                <field name="task_ids" widget="many2many_tags" />
                 <button
                     name="open_task"
                     icon="fa-folder-open"
@@ -36,7 +36,11 @@
                     string="Migrated"
                     domain="[('migration_status', '=', 'done')]"
                 />
-                <!--<filter name="not_migrated" string="To migrate" domain="[('migrated', '=', False)]"/>-->
+                <filter
+                    name="to_plan"
+                    string="To Plan"
+                    domain="[('task_ids', '=', False), ('migration_status', '!=', 'done')]"
+                />
             </field>
             <filter name="module" position="after">
                 <filter
