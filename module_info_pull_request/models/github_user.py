@@ -1,0 +1,45 @@
+# Copyright 2025 Akretion (https://www.akretion.com).
+# @author Sébastien BEAU <sebastien.beau@akretion.com>
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+from odoo import api, fields, models, tools
+
+
+class GithubUser(models.Model):
+    _name = "github.user"
+
+    name = fields.Char()
+    login = fields.Char()
+    company = fields.Char()
+    github_ext_id = fields.Integer()
+    user_id = fields.Many2one("res.users", "User")
+
+    @tools.ormcache("github_ext_id")
+    def _get_from_ext_id(self, github_ext_id):
+        return self.search([("github_ext_id", "=", github_ext_id)]).id
+
+    def _clear_get_version_cache(self):
+        self._get_from_ext_id.clear_cache(self.env[self._name])
+
+    def _get_or_create(self, gh_user):
+        user_id = self._get_from_ext_id(gh_user.id)
+        if user_id:
+            return self.browse(user_id)
+        else:
+            return self.create(
+                {
+                    "name": gh_user.name,
+                    "company": gh_user.company,
+                    "login": gh_user.login,
+                    "github_ext_id": gh_user.id,
+                }
+            )
+
+    @api.model
+    def create(self, vals):
+        self._clear_get_version_cache()
+        return super().create(vals)
+
+    def write(self, vals):
+        self._clear_get_version_cache()
+        return super().write(vals)
