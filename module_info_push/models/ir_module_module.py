@@ -29,6 +29,7 @@ class IrModuleModule(models.Model):
                     "description": module.description_html,
                     "author": module.author,
                     "is_custom": module.is_custom_module,
+                    "website": module.website,
                 }
                 for module in modules
             ],
