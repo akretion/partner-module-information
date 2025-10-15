@@ -14,7 +14,7 @@ _logger = logging.getLogger(__name__)
 class ModuleRepo(models.Model):
     _inherit = "module.repo"
 
-    date_last_updated = fields.Datetime(string="Last Update date", readonly=True)
+    date_last_updated = fields.Datetime(string="Last Update date")
     ignore_pr_import = fields.Boolean()
 
     def cron_import_pr(self):
@@ -33,7 +33,7 @@ class ModuleRepo(models.Model):
             if i % job_num_by_hour == 0:
                 eta += 60 * 60
 
-    def import_pr(self):
+    def _get_github_client(self):
         github_token = (
             self.env["ir.config_parameter"]
             .sudo()
@@ -43,6 +43,10 @@ class ModuleRepo(models.Model):
             g = Github(auth=Auth.Token(github_token))
         else:
             g = Github()
+        return g
+
+    def import_pr(self):
+        g = self._get_github_client()
         for repo in self:
             gh_repo = g.get_repo(f"{repo.organization}/{repo.name}")
             state = "all" if repo.date_last_updated else "open"
@@ -63,7 +67,7 @@ class ModuleRepo(models.Model):
         pr_obj = self.env["pull.request"]
         pr = pr_obj.search([("number", "=", gh_pr.number), ("repo_id", "=", self.id)])
         if pr:
-            vals = pr_obj._prepare_update_pr(gh_pr)
+            vals = pr._prepare_update_pr(gh_pr)
             pr.write(vals)
         else:
             vals = pr_obj._prepare_create_pr(self, gh_pr)

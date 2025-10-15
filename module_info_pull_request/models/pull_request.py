@@ -1,9 +1,11 @@
 import logging
 import re
+from datetime import date
 
 import requests
 
 from odoo import api, fields, models
+from odoo.fields import Command
 
 from ..tools import naive_dt
 
@@ -24,9 +26,22 @@ class PullRequest(models.Model):
         "module.information", string="Related Modules", readonly=True
     )
     version_id = fields.Many2one("odoo.version", readonly=True, index=True)
-    reviewer_ids = fields.Many2many("res.users")
+    reviewer_ids = fields.Many2many("res.users", string="Internal Reviewer")
     reviewer_count = fields.Integer(compute="_compute_reviewer_count", readonly=True)
-    state = fields.Char(index=True, readonly=True)
+    state = fields.Selection(
+        selection=[
+            ("draft", "Draft"),
+            ("need_reviewer", "Need Reviewer"),
+            ("waiting_review", "Waiting Review"),
+            ("need_fix", "Need Fix"),
+            ("approved", "Approved"),
+            ("done", "Done"),
+            ("cancel", "Cancel"),
+        ],
+        index=True,
+        readonly=True,
+    )
+    date_last_state_changed = fields.Date(readonly=True)
     url = fields.Char(readonly=True)
     number = fields.Integer(index=True, string="Github number", readonly=True)
     author = fields.Char(index=True, readonly=True)
@@ -37,6 +52,21 @@ class PullRequest(models.Model):
     )
     author_user_id = fields.Many2one(
         "res.users", compute="_compute_author_user_id", store=True
+    )
+    waiting_reviewer_ids = fields.Many2many(
+        "github.user",
+        relation="github_user_pull_request_waiting_rel",
+        readonly=True,
+    )
+    approved_reviewer_ids = fields.Many2many(
+        "github.user",
+        relation="github_user_pull_request_approved_rel",
+        readonly=True,
+    )
+    refused_reviewer_ids = fields.Many2many(
+        "github.user",
+        relation="github_user_pull_request_refused_rel",
+        readonly=True,
     )
 
     _sql_constraints = [
@@ -90,13 +120,62 @@ class PullRequest(models.Model):
                 module_ids.append(module_id)
         return module_ids
 
+    def _get_reviewer_info(self, pr):
+        waiting_for = []
+        for reviewer in pr.requested_reviewers:
+            waiting_for.append(self.env["github.user"]._get_or_create(reviewer).id)
+
+        # get the last review of each user
+        user2review = {}
+        for review in pr.get_reviews():
+            user2review[review.user] = review.state
+
+        approved_by = []
+        refused_by = []
+        for reviewer, state in user2review.items():
+            github_user = self.env["github.user"]._get_or_create(reviewer)
+            if github_user.id in waiting_for:
+                # If a user is have a requested review we do not care
+                # of his previous review
+                continue
+            if state == "APPROVED":
+                approved_by.append(github_user.id)
+            elif state == "CHANGES_REQUESTED":
+                refused_by.append(github_user.id)
+        return approved_by, refused_by, waiting_for
+
     def _prepare_update_pr(self, pr):
+        approved_by, refused_by, waiting_for = self._get_reviewer_info(pr)
         vals = {
             "date_updated": naive_dt(pr.updated_at),
             "title": pr.title,
-            "state": pr.state,
             "date_closed": naive_dt(pr.closed_at),
+            "waiting_reviewer_ids": [Command.set(waiting_for)],
+            "approved_reviewer_ids": [Command.set(approved_by)],
+            "refused_reviewer_ids": [Command.set(refused_by)],
         }
+
+        if pr.draft:
+            state = "draft"
+        elif pr.state == "closed":
+            state = "done" if pr.merged else "cancel"
+        elif refused_by:
+            state = "need_fix"
+        elif waiting_for:
+            state = "waiting_review"
+        elif approved_by:
+            state = "approved"
+        else:
+            state = "need_reviewer"
+        if self.state != state:
+            # Note in case of create the self is an empty browse record
+            # and so the state is always different
+            vals.update(
+                {
+                    "state": state,
+                    "date_last_state_changed": date.today(),
+                }
+            )
         return vals
 
     def _prepare_create_pr(self, repo, pr):
@@ -109,11 +188,19 @@ class PullRequest(models.Model):
             "version_id": self.env["odoo.version"]._get_id(pr.base.ref[:4]),
             "url": pr.html_url,
             "author": pr.user.login,
-            "orga": pr.head.user.login,
+            "orga": pr.head.user.login if pr.head.user else pr.user.login,
         }
         vals.update(self._prepare_update_pr(pr))
         return vals
 
+    def update_pr(self):
+        g = self.env["module.repo"]._get_github_client()
+        for record in self:
+            gh_repo = g.get_repo(f"{record.repo_id.organization}/{record.repo_id.name}")
+            gh_pr = gh_repo.get_pull(record.number)
+            record.write(self._prepare_update_pr(gh_pr))
+
+    # TODO review this behaviour of module version
     def _update_module_version(self):
         # manage module version depending on PRs
         # If there is a PR, then make sure we have at least a pending module version
