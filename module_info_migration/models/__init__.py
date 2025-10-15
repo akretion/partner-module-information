@@ -3,3 +3,4 @@ from . import module_information
 from . import module_partner
 
 from . import project_task
+from . import project_project

@@ -26,6 +26,14 @@ class ModulePartner(models.Model):
         string="Module",
         ondelete="cascade",
     )
+    repo_id = fields.Many2one(
+        related="module_id.repo_id",
+        store=True,
+    )
+    organization = fields.Char(
+        related="repo_id.organization",
+        store=True,
+    )
 
     @api.model
     def _prepare_module_info_vals(self, module_info, partner):

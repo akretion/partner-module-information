@@ -7,7 +7,32 @@
         <field name="arch" type="xml">
             <field name="module_auth_api_key_id" position="after">
                 <field name="target_odoo_version_id" />
+                <field name="id" invisible="True" />
+                <field name="migration_project_id" />
             </field>
+        </field>
+    </record>
+
+    <record id="view_module_partner_kanban" model="ir.ui.view">
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="module_info_partner.view_module_partner_kanban" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='image_128']" position="after">
+                <field name="migrated_module_nbr" />
+                <field name="target_odoo_version_id" />
+            </xpath>
+
+            <xpath expr="//div[@id='project_box']" position="inside">
+                <div attrs="{'invisible': [('target_odoo_version_id', '=', False)]}">
+                    <a name="get_action_migration_tree" type="object">
+                        <span>Migration
+                            <t t-esc="record.target_odoo_version_id.value" />:
+                            <t t-esc="record.migrated_module_nbr.value" /> /
+                            <t t-esc="record.module_nbr.value" />
+                        </span>
+                    </a>
+                </div>
+            </xpath>
         </field>
     </record>
 

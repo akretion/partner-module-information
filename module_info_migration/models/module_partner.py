@@ -13,7 +13,7 @@ class ModulePartner(models.Model):
         compute="_compute_migrated",
         store=True,
     )
-    task_ids = fields.Many2many("project.task", string="tasks")
+    task_ids = fields.Many2many("project.task", string="Tasks")
 
     @api.depends(
         "module_id.available_version_ids",
