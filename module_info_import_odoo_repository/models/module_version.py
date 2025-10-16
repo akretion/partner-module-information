@@ -1,0 +1,11 @@
+# Copyright 2025 Akretion (https://www.akretion.com).
+# @author Sébastien BEAU <sebastien.beau@akretion.com>
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+from odoo import fields, models
+
+
+class ModuleVersion(models.Model):
+    _inherit = "module.version"
+
+    migrations = fields.Json(helper="Migration information from odoo repository")
