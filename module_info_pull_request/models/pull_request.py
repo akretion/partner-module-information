@@ -35,7 +35,7 @@ class PullRequest(models.Model):
             ("waiting_review", "Waiting Review"),
             ("need_fix", "Need Fix"),
             ("approved", "Approved"),
-            ("done", "Done"),
+            ("done", "Merged"),
             ("cancel", "Cancel"),
         ],
         index=True,
