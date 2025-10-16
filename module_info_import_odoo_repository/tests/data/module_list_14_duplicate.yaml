@@ -1,0 +1,12 @@
+akretion:
+  odoo-usability:
+    duplicate_module_test1: {}
+oca:
+  account-financial-tools:
+    duplicate_module_test1: {}
+    duplicate_module_test2: {}
+tiers:
+  module:
+    single_module_test: {}
+    duplicate_module_test1: {}
+    duplicate_module_test2: {}
