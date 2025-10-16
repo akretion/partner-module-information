@@ -2,7 +2,7 @@ import logging
 
 from github import Auth, Github
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 from ..tools import naive_dt
 
@@ -15,7 +15,18 @@ class ModuleRepo(models.Model):
     _inherit = "module.repo"
 
     date_last_updated = fields.Datetime(string="Last Update date")
-    ignore_pr_import = fields.Boolean()
+    ignore_pr_import = fields.Boolean(
+        compute="_compute_ignore_pr_import",
+        store=True,
+        readonly=False,
+    )
+
+    @api.depends("url")
+    def _compute_ignore_pr_import(self):
+        for record in self:
+            record.ignore_pr_import = not record.url or not record.url.startswith(
+                "https://github.com"
+            )
 
     def cron_import_pr(self):
         repos = self.search([("ignore_pr_import", "!=", True)])
