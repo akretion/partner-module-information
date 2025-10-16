@@ -73,7 +73,11 @@ class ModuleInformation(models.Model):
             return repo
         else:
             return self.env["module.repo"].create(
-                {"organization": orga_name, "name": repo_name}
+                {
+                    "organization": orga_name,
+                    "name": repo_name,
+                    "url": f"https://github.com/{orga_name}/{repo_name}",
+                }
             )
 
     @api.model
