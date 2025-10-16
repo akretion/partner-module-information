@@ -16,9 +16,6 @@ class ModuleVersion(models.Model):
         default="pending",
         help="Indicates if module is available or has to be migrated.",
     )
-    url_pull_request = fields.Char(
-        help="URL of the ongoing pull request for the module migration"
-    )
 
     _sql_constraints = [
         (

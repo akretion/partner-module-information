@@ -1,4 +1,5 @@
-from odoo import _, api, exceptions, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 
 class ModulePartner(models.Model):
@@ -7,7 +8,10 @@ class ModulePartner(models.Model):
     migration_status = fields.Selection(
         selection=[
             ("obsolete", "Obsolete"),
+            ("planned", "Planned"),
+            ("todo", "Todo"),
             ("ongoing_pr", "Ongoing"),
+            ("port_commits", "Ported (missing commit)"),
             ("done", "Done"),
         ],
         compute="_compute_migrated",
@@ -21,6 +25,7 @@ class ModulePartner(models.Model):
         "module_id.wip_version_ids",
         "module_id.obsolete_version_id",
         "task_ids.stage_id",
+        "module_version_id.migrations",
     )
     def _compute_migrated(self):
         versions = self.env["odoo.version"].search([])
@@ -36,41 +41,49 @@ class ModulePartner(models.Model):
                 ).ids
             else:
                 obsolete_version_ids = []
-            if record.task_ids:
-                if any(
-                    [task.state not in ("done", "cancel") for task in record.task_ids]
-                ):
-                    record.migration_status = "ongoing_pr"
-                else:
-                    record.migration_status = "done"
-            elif target_version in record.module_id.wip_version_ids:
+
+            if target_version in record.module_id.wip_version_ids:
                 record.migration_status = "ongoing_pr"
             elif target_version.id in obsolete_version_ids:
                 record.migration_status = "obsolete"
             elif target_version in record.module_id.available_version_ids:
-                record.migration_status = "done"
+                migrations = record.module_version_id.migrations or []
+                for migration in migrations:
+                    if (
+                        migration["target_branch"] == target_version.name
+                        and migration["process"] == "port_commits"
+                    ):
+                        record.migration_status = "port_commits"
+                        break
+                else:
+                    record.migration_status = "done"
+            elif record.task_ids:
+                record.migration_status = "planned"
             else:
-                record.migration_status = False
+                record.migration_status = "todo"
 
     def open_pull_request(self):
         self.ensure_one()
-        dest_module_version = self.env["module.version"].search(
+        pulls = self.env["pull.request"].search(
             [
+                ("module_ids", "=", self.module_id.id),
                 ("version_id", "=", self.partner_id.target_odoo_version_id.id),
-                ("url_pull_request", "!=", False),
-                ("module_id", "=", self.module_id.id),
-                ("state", "=", "pending"),
             ]
         )
-        if not dest_module_version:
-            raise exceptions.UserError(_("No known migration PR for this module."))
-        client_action = {
-            "type": "ir.actions.act_url",
-            "name": "Migration PR",
-            "target": "new",
-            "url": dest_module_version.url_pull_request,
-        }
-        return client_action
+        if len(pulls) == 0:
+            raise UserError(_("No known migration PR for this module."))
+        elif len(pulls) > 1:
+            raise UserError(
+                _("Several Pull are open \n: %s")
+                % "\n- ".join([pull.url for pull in pulls])
+            )
+        else:
+            return {
+                "type": "ir.actions.act_url",
+                "name": "Migration PR",
+                "target": "new",
+                "url": pulls.url,
+            }
 
     def open_task(self):
         tasks = self.task_ids
