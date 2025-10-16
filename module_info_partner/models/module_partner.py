@@ -34,14 +34,29 @@ class ModulePartner(models.Model):
         related="repo_id.organization",
         store=True,
     )
+    module_version_id = fields.Many2one(
+        "module.version",
+        compute="_compute_module_version_id",
+        store=True,
+    )
+
+    def _compute_module_version_id(self):
+        for record in self:
+            record.module_version_id = record.module_id.module_version_ids.filtered(
+                lambda s, record=record: s.version_id == record.version_id
+            )
 
     @api.model
     def _prepare_module_info_vals(self, module_info, partner):
+        repo = self.env["module.repo"]._get_or_create_repo_from_url(
+            module_info["website"]
+        )
         vals = {
             "name": module_info.get("name"),
             "shortdesc": module_info.get("shortdesc"),
             "description": module_info.get("description"),
             "authors": module_info.get("author"),
+            "repo_id": repo.id,
         }
         if module_info["is_custom"]:
             vals["partner_id"] = partner.id

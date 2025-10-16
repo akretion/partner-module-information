@@ -11,6 +11,7 @@ class ModuleInfo(BaseModel):
     description: str
     author: str
     is_custom: bool
+    website: str
 
 
 class ModuleVersionInfo(BaseModel):

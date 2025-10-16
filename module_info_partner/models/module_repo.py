@@ -1,3 +1,5 @@
+import re
+
 from odoo import api, fields, models
 
 
@@ -26,3 +28,23 @@ class ModuleRepo(models.Model):
     def _compute_module_nbr(self):
         for record in self:
             record.module_nbr = len(record.module_ids)
+
+    def _get_or_create_repo_from_url(self, url):
+        url = url.lower()
+        match = re.match(r"https?://[^/]+/([^/]+)/([^/]+)", url)
+        if match:
+            orga_name, repo_name = match.groups()
+            repo = self.env["module.repo"].search(
+                [("name", "=", repo_name), ("organization", "=", orga_name)]
+            )
+            if not repo:
+                repo = self.env["module.repo"].create(
+                    {
+                        "name": repo_name,
+                        "organization": orga_name,
+                        "url": url,
+                    }
+                )
+        else:
+            repo = self.env["module.repo"]
+        return repo
