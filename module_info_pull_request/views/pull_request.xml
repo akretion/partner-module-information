@@ -95,12 +95,12 @@
                 <filter
                     name="opened"
                     string="Opened PR"
-                    domain="[('state', 'not in', ['cancel', 'closed'])]"
+                    domain="[('state', 'not in', ['cancel', 'done'])]"
                 />
                 <filter
                     name="closed"
                     string="Closed PR"
-                    domain="[('state', 'in', ['cancel', 'closed'])]"
+                    domain="[('state', 'in', ['cancel', 'done'])]"
                 />
                 <separator />
                 <filter
