@@ -89,18 +89,22 @@ class ModulePartner(models.Model):
     def _compute_missing_commit_html(self):
         for record in self:
             rows = []
-            for pr_id, pr_info in record.missing_commit.items():
-                if not pr_id:
-                    rows.append(
-                        ROW_TEMPLATE.format(
-                            id=pr_id,
-                            url=pr_info["url"],
-                            author=pr_info["author"],
-                            title=pr_info["title"],
-                            missing_commits="<br>".join(pr_info["missing_commits"]),
+            if record.missing_commit:
+                for pr_id, pr_info in record.missing_commit.items():
+                    if not pr_id:
+                        rows.append(
+                            ROW_TEMPLATE.format(
+                                id=pr_id,
+                                url=pr_info["url"],
+                                author=pr_info["author"],
+                                title=pr_info["title"],
+                                missing_commits="<br>".join(pr_info["missing_commits"]),
+                            )
                         )
-                    )
-            record.missing_commit_html = HTML_TEMPLATE.format(rows="\n".join(rows))
+            if rows:
+                record.missing_commit_html = HTML_TEMPLATE.format(rows="\n".join(rows))
+            else:
+                record.missing_commit_html = ""
 
     def _get_migration_data(self):
         migrations = self.module_version_id.migrations or []
