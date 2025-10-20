@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
 
+    <record id="module_partner_view_form" model="ir.ui.view">
+        <field name="model">module.partner</field>
+        <field name="arch" type="xml">
+            <form string="Modules">
+                <header />
+                <group name="header">
+                    <field name="organization" />
+                    <field name="repo_id" />
+                    <field name="module_id" />
+                    <field name="partner_id" />
+                    <field name="version_id" />
+                </group>
+            </form>
+        </field>
+    </record>
+
     <record id="module_partner_tree_view" model="ir.ui.view">
         <field name="name">module.partner.tree.view</field>
         <field name="model">module.partner</field>

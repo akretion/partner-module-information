@@ -41,6 +41,7 @@ class ModuleInformation(models.Model):
             )
             if mod_version.migrations != module["migrations"]:
                 mod_version.migrations = module["migrations"]
+                mod_version._update_migration_hook()
 
     def _prepare_vals_from_odoo_repository(self, module):
         return {

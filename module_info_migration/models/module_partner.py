@@ -1,5 +1,37 @@
+import logging
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
+
+
+HTML_TEMPLATE = """
+<table border="1" cellpadding="8" cellspacing="0" width="100%">
+  <thead>
+    <tr style="border:1px solid black;">
+      <th style="border:1px solid black;">id</th>
+      <th style="border:1px solid black;">url</th>
+      <th style="border:1px solid black;">author</th>
+      <th style="border:1px solid black;">title</th>
+      <th style="border:1px solid black;">missing_commit</th>
+    </tr>
+  </thead>
+  <tbody>
+    {rows}
+  </tbody>
+</table>
+"""
+
+ROW_TEMPLATE = """
+    <tr>
+      <td style="border:1px solid black;">{id}</td>
+      <td style="border:1px solid black;"><a href="{url}">{url}</a></td>
+      <td style="border:1px solid black;">{author}</td>
+      <td style="border:1px solid black;">{title}</td>
+      <td style="border:1px solid black;">{missing_commits}</td>
+    </tr>
+"""
 
 
 class ModulePartner(models.Model):
@@ -8,8 +40,8 @@ class ModulePartner(models.Model):
     migration_status = fields.Selection(
         selection=[
             ("obsolete", "Obsolete"),
-            ("planned", "Planned"),
             ("todo", "Todo"),
+            ("planned", "Planned"),
             ("ongoing_pr", "Ongoing"),
             ("port_commits", "Ported (missing commit)"),
             ("done", "Done"),
@@ -17,7 +49,69 @@ class ModulePartner(models.Model):
         compute="_compute_migrated",
         store=True,
     )
-    task_ids = fields.Many2many("project.task", string="Tasks")
+    task_ids = fields.Many2many(
+        "project.task",
+        string="Tasks",
+        readonly=True,
+    )
+
+    missing_commit = fields.Json(
+        compute="_compute_missing_commit",
+        store=True,
+    )
+    missing_commit_html = fields.Html(
+        compute="_compute_missing_commit_html",
+    )
+    missing_pr_ids = fields.Many2many(
+        comodel_name="missing.pull.request",
+        string="Missing Pr",
+        compute="_compute_missing_pr_ids",
+    )
+
+    @api.depends("module_version_id.missing_pr_ids")
+    def _compute_missing_pr_ids(self):
+        for record in self:
+            record.missing_pr_ids = record.module_version_id.missing_pr_ids.filtered(
+                lambda s, record=record: s.target_version_id
+                == record.partner_id.target_odoo_version_id
+            )
+
+    @api.depends("module_version_id.migrations")
+    def _compute_missing_commit(self):
+        for record in self:
+            migration = record._get_migration_data()
+            if migration:
+                record.missing_commit = migration["results"]
+            else:
+                record.missing_commit = []
+
+    @api.depends("module_version_id.migrations")
+    def _compute_missing_commit_html(self):
+        for record in self:
+            rows = []
+            for pr_id, pr_info in record.missing_commit.items():
+                if not pr_id:
+                    rows.append(
+                        ROW_TEMPLATE.format(
+                            id=pr_id,
+                            url=pr_info["url"],
+                            author=pr_info["author"],
+                            title=pr_info["title"],
+                            missing_commits="<br>".join(pr_info["missing_commits"]),
+                        )
+                    )
+            record.missing_commit_html = HTML_TEMPLATE.format(rows="\n".join(rows))
+
+    def _get_migration_data(self):
+        migrations = self.module_version_id.migrations or []
+        target_version = self.partner_id.target_odoo_version_id
+        for migration in migrations:
+            if (
+                migration["target_branch"] == target_version.name
+                and migration["process"] == "port_commits"
+            ):
+                return migration
+        return None
 
     @api.depends(
         "module_id.available_version_ids",
@@ -25,7 +119,7 @@ class ModulePartner(models.Model):
         "module_id.wip_version_ids",
         "module_id.obsolete_version_id",
         "task_ids.stage_id",
-        "module_version_id.migrations",
+        "missing_commit",
     )
     def _compute_migrated(self):
         versions = self.env["odoo.version"].search([])
@@ -47,14 +141,8 @@ class ModulePartner(models.Model):
             elif target_version.id in obsolete_version_ids:
                 record.migration_status = "obsolete"
             elif target_version in record.module_id.available_version_ids:
-                migrations = record.module_version_id.migrations or []
-                for migration in migrations:
-                    if (
-                        migration["target_branch"] == target_version.name
-                        and migration["process"] == "port_commits"
-                    ):
-                        record.migration_status = "port_commits"
-                        break
+                if record.missing_commit:
+                    record.migration_status = "port_commits"
                 else:
                     record.migration_status = "done"
             elif record.task_ids:

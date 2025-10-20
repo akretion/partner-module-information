@@ -1,5 +1,53 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
+    <record id="module_partner_view_form" model="ir.ui.view">
+        <field name="model">module.partner</field>
+        <field name="inherit_id" ref="module_info_partner.module_partner_view_form" />
+        <field name="arch" type="xml">
+            <header position="inside">
+                <field
+                    name="migration_status"
+                    widget="statusbar"
+                    statusbar_visible="todo,planned,ongoing_pr,done"
+                />
+            </header>
+            <group name="header" position="after">
+                <group name="todo">
+                    <field name="task_ids" nolabel="1" colspan="2" />
+                    <field name="missing_commit_html" nolabel="1" colspan="2" />
+                    <field name="missing_pr_ids" nolabel="1" colspan="2">
+                        <tree>
+                            <field name="pr_id" />
+                            <field name="title" />
+                            <field name="url" widget="url" />
+                            <field name="missing_commits" />
+                            <field name="state" />
+                            <button
+                                name="set_to_analyse"
+                                type="object"
+                                class="btn-secondary fa fa-list"
+                            />
+                            <button
+                                name="set_todo"
+                                type="object"
+                                class="btn-primary fa fa-calendar"
+                            />
+                            <button
+                                name="set_ignore"
+                                type="object"
+                                class="btn-danger fa fa-trash"
+                            />
+                            <button
+                                name="set_useless"
+                                type="object"
+                                class="btn-warning fa fa-trash"
+                            />
+                        </tree>
+                    </field>
+                </group>
+            </group>
+        </field>
+    </record>
 
     <record id="module_partner_tree_view" model="ir.ui.view">
         <field name="model">module.partner</field>

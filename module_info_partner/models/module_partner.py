@@ -10,7 +10,12 @@ class ModulePartner(models.Model):
     _description = "Modules used by partner"
 
     partner_id = fields.Many2one(
-        "res.partner", required=True, index=True, string="Partner", ondelete="cascade"
+        "res.partner",
+        required=True,
+        index=True,
+        string="Partner",
+        ondelete="cascade",
+        readonly=True,
     )
     version_id = fields.Many2one(
         "odoo.version",
@@ -18,6 +23,7 @@ class ModulePartner(models.Model):
         required=True,
         index=True,
         ondelete="cascade",
+        readonly=True,
     )
     module_id = fields.Many2one(
         "module.information",
@@ -25,6 +31,7 @@ class ModulePartner(models.Model):
         index=True,
         string="Module",
         ondelete="cascade",
+        readonly=True,
     )
     repo_id = fields.Many2one(
         related="module_id.repo_id",

@@ -16,6 +16,7 @@
         "views/res_partner.xml",
         "views/module_partner.xml",
         "views/module_information.xml",
+        "views/missing_pull_request_view.xml",
         "views/project_task_view.xml",
         "wizard/module_task_creator.xml",
     ],

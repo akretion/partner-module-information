@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="module_version_tree_view" model="ir.ui.view">
+        <field name="name">module.version.tree.view</field>
+        <field name="model">module.version</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="module_id" />
+                <field name="version_id" />
+                <field name="state" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="module_version_search_view" model="ir.ui.view">
+        <field name="name">module.version.search.view</field>
+        <field name="model">module.version</field>
+        <field name="arch" type="xml">
+            <search string="Module Version Information">
+                <field name="module_id" />
+                <field name="version_id" />
+                <group expand="0" string="Group By">
+                    <filter
+                        name="group_by_version"
+                        string="Version"
+                        context="{'group_by': 'version_id'}"
+                    />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="module_version_action" model="ir.actions.act_window">
+        <field name="name">Module Versions</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">module.version</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="module_version_search_view" />
+    </record>
+
+    <menuitem
+        id="module_version_menu"
+        name="Module Versions"
+        parent="modules_information_main_menu"
+        action="module_version_action"
+        sequence="10"
+    />
+
+</odoo>
