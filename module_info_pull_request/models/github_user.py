@@ -22,18 +22,24 @@ class GithubUser(models.Model):
         self._get_from_ext_id.clear_cache(self.env[self._name])
 
     def _get_or_create(self, gh_user):
-        user_id = self._get_from_ext_id(gh_user.id)
-        if user_id:
-            return self.browse(user_id)
+        if gh_user:
+            user_id = self._get_from_ext_id(gh_user.id)
+            if user_id:
+                return self.browse(user_id)
+            else:
+                return self.create(
+                    {
+                        "name": gh_user.name,
+                        "company": gh_user.company,
+                        "login": gh_user.login,
+                        "github_ext_id": gh_user.id,
+                    }
+                )
         else:
-            return self.create(
-                {
-                    "name": gh_user.name,
-                    "company": gh_user.company,
-                    "login": gh_user.login,
-                    "github_ext_id": gh_user.id,
-                }
-            )
+            # If there is not user this mean that the user have been deleted
+            # github replace this "deleted" user in the website with the ghost user
+            # but in the API it's not replaced, the gh_user is None
+            return self.env.ref("module_info_pull_request.ghost_user")
 
     @api.model
     def create(self, vals):

@@ -73,6 +73,13 @@ class ModuleRepo(models.Model):
             if new_last_updated:
                 repo.date_last_updated = new_last_update
 
+    def import_pr_number(self, number):
+        self.ensure_one()
+        g = self._get_github_client()
+        gh_repo = g.get_repo(f"{self.organization}/{self.name}")
+        gh_pr = gh_repo.get_pull(number)
+        return self._create_or_update_pr(gh_pr)
+
     def _create_or_update_pr(self, gh_pr):
         self.ensure_one()
         pr_obj = self.env["pull.request"]
@@ -84,6 +91,7 @@ class ModuleRepo(models.Model):
             vals = pr_obj._prepare_create_pr(self, gh_pr)
             pr = pr_obj.create(vals)
         pr._update_module_version()
+        return pr
 
     def get_pr_state(self):
         self.import_pr()
