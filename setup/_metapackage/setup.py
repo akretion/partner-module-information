@@ -4,20 +4,20 @@ with open('VERSION.txt', 'r') as f:
     version = f.read().strip()
 
 setuptools.setup(
-    name="odoo14-addons-akretion-partner-module-information",
+    name="odoo-addons-akretion-partner-module-information",
     description="Meta package for akretion-partner-module-information Odoo addons",
     version=version,
     install_requires=[
-        'odoo14-addon-module_info_import',
-        'odoo14-addon-module_info_migration',
-        'odoo14-addon-module_info_partner',
-        'odoo14-addon-module_info_pull_request',
-        'odoo14-addon-module_info_pull_request_timesheet',
-        'odoo14-addon-module_info_push',
+        'odoo-addon-module_info_import>=16.0dev,<16.1dev',
+        'odoo-addon-module_info_migration>=16.0dev,<16.1dev',
+        'odoo-addon-module_info_partner>=16.0dev,<16.1dev',
+        'odoo-addon-module_info_pull_request>=16.0dev,<16.1dev',
+        'odoo-addon-module_info_pull_request_timesheet>=16.0dev,<16.1dev',
+        'odoo-addon-module_info_push>=16.0dev,<16.1dev',
     ],
     classifiers=[
         'Programming Language :: Python',
         'Framework :: Odoo',
-        'Framework :: Odoo :: 14.0',
+        'Framework :: Odoo :: 16.0',
     ]
 )
