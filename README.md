@@ -33,12 +33,12 @@ Available addons
 ----------------
 addon | version | maintainers | summary
 --- | --- | --- | ---
-[module_info_import](module_info_import/) | 14.0.1.0.0 |  | Get information about modules from akretion/odoo-module-tracker
-[module_info_migration](module_info_migration/) | 14.0.1.0.0 |  | Module Info Migration
-[module_info_partner](module_info_partner/) | 14.0.0.0.0 |  | Information about odoo modules used by your partners
-[module_info_pull_request](module_info_pull_request/) | 14.0.0.0.0 |  | Information about Pull Request state on modules
-[module_info_pull_request_timesheet](module_info_pull_request_timesheet/) | 14.0.0.0.0 |  | Add timesheet to Pull request
-[module_info_push](module_info_push/) | 14.0.1.0.0 |  | Send information about installed module in the database
+[module_info_import](module_info_import/) | 16.0.1.0.0 |  | Get information about modules from akretion/odoo-module-tracker
+[module_info_migration](module_info_migration/) | 16.0.1.0.0 |  | Module Info Migration
+[module_info_partner](module_info_partner/) | 16.0.1.0.0 |  | Information about odoo modules used by your partners
+[module_info_pull_request](module_info_pull_request/) | 16.0.1.0.0 |  | Information about Pull Request state on modules
+[module_info_pull_request_timesheet](module_info_pull_request_timesheet/) | 16.0.1.0.0 |  | Add timesheet to Pull request
+[module_info_push](module_info_push/) | 16.0.1.0.0 |  | Send information about installed module in the database
 
 [//]: # (end addons)
 
