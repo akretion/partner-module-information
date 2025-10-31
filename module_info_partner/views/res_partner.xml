@@ -19,13 +19,14 @@
     <record id="view_module_partner_kanban" model="ir.ui.view">
             <field name="name">module.partner.kanban</field>
             <field name="model">res.partner</field>
-            <field eval="15" name="priority" />
+            <field eval="1500" name="priority" />
             <field name="arch" type="xml">
             <kanban class="oe_background_grey" create="0">
                 <field name="id" />
                 <field name="name" />
                 <field name="title" />
                 <field name="image_128" />
+                <field name="module_nbr" />
                 <templates>
                     <t t-name="kanban-box">
                         <div class="oe_kanban_card oe_kanban_global_click">

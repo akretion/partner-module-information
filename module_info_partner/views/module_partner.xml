@@ -5,7 +5,7 @@
         <field name="name">module.partner.tree.view</field>
         <field name="model">module.partner</field>
         <field name="arch" type="xml">
-            <tree string="Module Partner Information">
+            <tree>
                 <field name="module_id" />
                 <field name="partner_id" />
                 <field name="version_id" />

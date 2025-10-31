@@ -14,6 +14,7 @@ class ModuleInformation(models.TransientModel):
             )
         return partners
 
+    prefix_task_name = fields.Char()
     project_id = fields.Many2one("project.project", required=True)
     partner_id = fields.Many2one(
         "res.partner", required=True, default=_get_default_partner
@@ -22,10 +23,11 @@ class ModuleInformation(models.TransientModel):
     def validate(self):
         module_partner_ids = self.env.context.get("active_ids")
         modules = self.env["module.partner"].browse(module_partner_ids)
+        prefix = self.prefix_task_name or ""
         for module in modules:
             task_vals = {
                 "project_id": self.project_id.id,
-                "name": module.module_id.name,
+                "name": f"{prefix}{module.module_id.name}",
                 "module_partner_ids": [(6, 0, [module.id])],
             }
             self.env["project.task"].create(task_vals)

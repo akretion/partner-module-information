@@ -1,7 +1,7 @@
 {
     "name": "Module Info Pull Request",
     "summary": "Information about Pull Request state on modules",
-    "version": "14.0.0.0.0",
+    "version": "16.0.1.0.0",
     "license": "AGPL-3",
     "author": "Akretion, Odoo Community Association (OCA)",
     "website": "https://github.com/akretion/partner-module-information",

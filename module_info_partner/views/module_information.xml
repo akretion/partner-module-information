@@ -42,7 +42,7 @@
         <field name="name">module.information.tree.view</field>
         <field name="model">module.information</field>
         <field name="arch" type="xml">
-            <tree string="Module Information">
+            <tree>
                 <field name="name" />
                 <field name="repo_id" />
                 <field name="authors" />

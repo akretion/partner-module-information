@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
 
-    <!-- REMOVE .tmp to make usable -->
-
     <record id="module_task_creator_form_view" model="ir.ui.view">
         <field name="name">module.task.creator.form</field>
         <field name="model">module.task.creator</field>
@@ -13,6 +11,7 @@
                         name="project_id"
                         domain="[('partner_id', '=', partner_id)]"
                     />
+                    <field name="prefix_task_name" />
                     <field name="partner_id" readonly="1" />
                 </group>
                 <footer>

@@ -5,7 +5,7 @@
         <field name="name">pull.request.tree.view</field>
         <field name="model">pull.request</field>
         <field name="arch" type="xml">
-            <tree string="Pull Request">
+            <tree>
                 <field name="title" />
                 <field name="repo_id" />
                 <field name="module_ids" widget="many2many_tags" />

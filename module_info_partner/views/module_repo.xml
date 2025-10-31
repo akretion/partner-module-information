@@ -5,7 +5,7 @@
         <field name="name">module.repo.tree.view</field>
         <field name="model">module.repo</field>
         <field name="arch" type="xml">
-            <tree string="Module Host Repository">
+            <tree>
                 <field name="organization" />
                 <field name="name" />
                 <field name="url" />

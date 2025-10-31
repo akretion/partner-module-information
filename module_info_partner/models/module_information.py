@@ -9,7 +9,6 @@ class ModuleInformation(models.Model):
     shortdesc = fields.Char(string="Human Name", readonly=True, index=True)
     name = fields.Char(readonly=True, index=True)
     note = fields.Text(
-        string="Note",
         help="Edit this field to store complementary information about the module",
     )
     description = fields.Html(readonly=True)

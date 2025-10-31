@@ -53,7 +53,9 @@ class ModuleRepo(models.Model):
                         "&sort=updated&direction=desc"
                     )
                     response = requests.get(
-                        url, headers={"authorization": f"Bearer {git_token}"}
+                        url,
+                        headers={"authorization": f"Bearer {git_token}"},
+                        timeout=120,
                     )
                     if len(response.json()):
                         prs.extend(response.json())
@@ -77,7 +79,9 @@ class ModuleRepo(models.Model):
                         f"/{repo.name}/pulls?per_page=40&page={page}"
                     )
                     response = requests.get(
-                        url, headers={"authorization": f"Bearer {git_token}"}
+                        url,
+                        headers={"authorization": f"Bearer {git_token}"},
+                        timeout=120,
                     )
                     if len(response.json()):
                         prs.extend(response.json())

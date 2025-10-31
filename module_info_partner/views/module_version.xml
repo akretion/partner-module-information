@@ -5,7 +5,7 @@
         <field name="name">module.version.tree.view</field>
         <field name="model">module.version</field>
         <field name="arch" type="xml">
-            <tree string="Module Versions">
+            <tree>
                 <field name="module_id" />
                 <field name="version_id" />
                 <field name="state" />

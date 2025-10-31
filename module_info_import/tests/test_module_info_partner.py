@@ -12,7 +12,7 @@ class TestinfoImport(TransactionCase):
         data_dir = os.path.join(
             os.path.dirname(__file__), "data", "module_list_14.yaml"
         )
-        with open(data_dir, "r") as f:
+        with open(data_dir) as f:
             self.modules_yaml = f.read()
         self.env["odoo.version"].search([]).unlink()
         self.env["odoo.version"].create({"name": "14.0"})
@@ -48,7 +48,7 @@ class TestinfoImport(TransactionCase):
             os.path.dirname(__file__), "data", "module_list_14_duplicate.yaml"
         )
 
-        with open(data_dir, "r") as f:
+        with open(data_dir) as f:
             self.modules_yaml = f.read()
             with requests_mock.mock() as m:
                 m.get(

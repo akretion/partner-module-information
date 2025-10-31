@@ -33,11 +33,7 @@
                         nolabel="1"
                         context="{'default_project_id': project_id, 'default_name':''}"
                     >
-                        <tree
-                            editable="bottom"
-                            string="Timesheet Activities"
-                            default_order="date"
-                        >
+                        <tree editable="bottom" default_order="date">
                             <field name="date" />
                             <field name="user_id" invisible="1" />
                             <field

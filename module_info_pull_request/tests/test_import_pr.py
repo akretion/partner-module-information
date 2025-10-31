@@ -13,7 +13,7 @@ class TestinfoImport(TransactionCase):
         super().setUp()
         self.modules = {"sale_import_delivery_carrier": 1}
         data_dir = os.path.join(os.path.dirname(__file__), "data", "pr.diff")
-        with open(data_dir, "r") as f:
+        with open(data_dir) as f:
             self.pr_diff = f.read()
 
     def test_module_from_pr(self):

@@ -6,7 +6,22 @@
         <field name="inherit_id" ref="module_info_partner.module_partner_tree_view" />
         <field name="arch" type="xml">
             <field name="version_id" position="after">
+                <field name="task_ids" invisible="1" />
                 <field name="migration_status" />
+                <button
+                    name="open_pull_request"
+                    icon="fa-github"
+                    type="object"
+                    title="Open PR"
+                    attrs="{'invisible': [('migration_status', '!=', 'ongoing_pr')]}"
+                />
+                <button
+                    name="open_task"
+                    icon="fa-folder-open"
+                    type="object"
+                    title="Open Tasks"
+                    attrs="{'invisible': [('task_ids', '=', [])]}"
+                />
             </field>
         </field>
     </record>

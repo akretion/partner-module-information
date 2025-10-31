@@ -73,7 +73,9 @@ class PullRequest(models.Model):
             .sudo()
             .get_param("module.info.pull.request.git.token")
         )
-        response = requests.get(url, headers={"authorization": f"Bearer {git_token}"})
+        response = requests.get(
+            url, headers={"authorization": f"Bearer {git_token}"}, timeout=10
+        )
         matchs = re.findall(r"\+{3,5} b.*", response.text)
         module_ids = []
         for line in matchs:

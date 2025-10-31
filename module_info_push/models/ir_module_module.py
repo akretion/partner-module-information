@@ -43,7 +43,7 @@ class IrModuleModule(models.Model):
         if not api_key or not api_url:
             return
         module_info = self._get_installed_module_info()
-        url = "{}/module-api/module/synchronize_installed_module_info".format(api_url)
+        url = f"{api_url}/module-api/module/synchronize_installed_module_info"
         headers = {"API-KEY": api_key}
         try:
             res = requests.post(
