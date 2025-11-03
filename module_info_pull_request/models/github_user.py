@@ -29,7 +29,7 @@ class GithubUser(models.Model):
             else:
                 return self.create(
                     {
-                        "name": gh_user.name,
+                        "name": gh_user.name or gh_user.login,
                         "company": gh_user.company,
                         "login": gh_user.login,
                         "github_ext_id": gh_user.id,
