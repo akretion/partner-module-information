@@ -129,6 +129,13 @@ class PullRequest(models.Model):
                 refused_by.append(github_user.id)
         return approved_by, refused_by, waiting_for
 
+    def is_approved(self, approved_by):
+        # OCA orga need 2 approved move this in an extra module
+        if self.repo_id.organization.lower() == "oca":
+            return len(approved_by) >= 2
+        else:
+            return bool(approved_by)
+
     def _prepare_update_pr(self, pr):
         approved_by, refused_by, waiting_for = self._get_reviewer_info(pr)
         vals = {
@@ -148,7 +155,7 @@ class PullRequest(models.Model):
             state = "need_fix"
         elif waiting_for:
             state = "waiting_review"
-        elif approved_by:
+        elif self.is_approved(approved_by):
             state = "approved"
         else:
             state = "need_reviewer"
