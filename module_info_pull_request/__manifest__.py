@@ -17,6 +17,7 @@
         "views/module_repo.xml",
         "views/res_partner.xml",
         "views/res_users.xml",
+        "views/github_user_view.xml",
     ],
     "installable": True,
     "external_dependencies": {"python": ["pyyaml", "PyGithub"]},

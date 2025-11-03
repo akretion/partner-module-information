@@ -48,7 +48,7 @@
     </record>
 
     <record model="ir.actions.act_window" id="missing_pull_request_action">
-        <field name="name">Missing Pull Request</field>
+        <field name="name">Missing Commit Pull Request</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">missing.pull.request</field>
         <field name="view_mode">tree,form</field>
@@ -59,7 +59,7 @@
 
     <menuitem
         id="missing_pull_request_menu"
-        parent="module_info_partner.module_info_menu_root"
+        parent="module_info_partner.modules_information_main_config_menu"
         sequence="20"
         action="missing_pull_request_action"
     />

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="github_user_view_tree" model="ir.ui.view">
+        <field name="model">github.user</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+                <field name="login" />
+                <field name="company" />
+                <field name="github_ext_id" />
+                <field name="user_id" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="github_user_view_form" model="ir.ui.view">
+        <field name="model">github.user</field>
+        <field name="arch" type="xml">
+            <form string="Github User">
+                <group>
+                    <field name="name" />
+                    <field name="login" />
+                    <field name="company" />
+                    <field name="github_ext_id" />
+                    <field name="user_id" />
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="github_user_view_search" model="ir.ui.view">
+        <field name="model">github.user</field>
+        <field name="arch" type="xml">
+            <search string="Github User">
+                <field name="name" />
+                <field name="login" />
+                <field name="user_id" />
+            </search>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="github_user_action">
+        <field name="name">Github User</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">github.user</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="github_user_view_search" />
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="github_user_menu"
+        parent="module_info_partner.modules_information_main_config_menu"
+        sequence="20"
+        action="github_user_action"
+    />
+
+</odoo>

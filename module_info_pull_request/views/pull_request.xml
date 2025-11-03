@@ -17,7 +17,6 @@
                 <field name="version_id" />
                 <field name="state" />
                 <field name="date_last_state_changed" />
-                <field name="reviewer_ids" widget="many2many_tags" />
                 <field name="waiting_reviewer_ids" widget="many2many_tags" />
                 <field name="approved_reviewer_ids" widget="many2many_tags" />
                 <field name="refused_reviewer_ids" widget="many2many_tags" />
@@ -76,7 +75,6 @@
                     <group name="pr_info">
                         <group>
                         <field name="module_ids" widget="many2many_tags" />
-                        <field name="reviewer_ids" widget="many2many_tags" />
                         </group>
                     </group>
                 </sheet>
@@ -114,17 +112,6 @@
                     domain="[('version_id', '=', '15.0')]"
                 />
                 <filter name="v16" string="V16" domain="" />
-                <separator />
-                <filter
-                    name="myreview"
-                    string="My Reviews (odoo)"
-                    domain="[('reviewer_ids', '=', uid)]"
-                />
-                <filter
-                    name="availablereview"
-                    string="Available Review (odoo)"
-                    domain="[('reviewer_ids_nbr', '&lt;', 2 )]"
-                />
                 <separator />
                 <filter
                     name="mypr"
