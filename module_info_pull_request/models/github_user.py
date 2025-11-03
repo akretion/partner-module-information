@@ -8,10 +8,10 @@ from odoo import api, fields, models, tools
 class GithubUser(models.Model):
     _name = "github.user"
 
-    name = fields.Char()
-    login = fields.Char()
-    company = fields.Char()
-    github_ext_id = fields.Integer()
+    name = fields.Char(readonly=True)
+    login = fields.Char(readonly=True)
+    company = fields.Char(readonly=True)
+    github_ext_id = fields.Integer(readonly=True)
     user_id = fields.Many2one("res.users", "User")
 
     @tools.ormcache("github_ext_id")

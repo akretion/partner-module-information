@@ -26,8 +26,6 @@ class PullRequest(models.Model):
         "module.information", string="Related Modules", readonly=True
     )
     version_id = fields.Many2one("odoo.version", readonly=True, index=True)
-    reviewer_ids = fields.Many2many("res.users", string="Internal Reviewer")
-    reviewer_count = fields.Integer(compute="_compute_reviewer_count", readonly=True)
     state = fields.Selection(
         selection=[
             ("draft", "Draft"),
@@ -47,9 +45,6 @@ class PullRequest(models.Model):
     author = fields.Char(index=True, readonly=True)
     orga = fields.Char(index=True, readonly=True)
     need_review = fields.Boolean(string="Review requested")
-    reviewer_ids_nbr = fields.Integer(
-        compute="_compute_reviewer_ids_nbr", readonly=True, store=True
-    )
     author_user_id = fields.Many2one(
         "res.users", compute="_compute_author_user_id", store=True
     )
@@ -87,16 +82,6 @@ class PullRequest(models.Model):
                 )
                 .id
             )
-
-    @api.depends("reviewer_ids")
-    def _compute_reviewer_ids_nbr(self):
-        for record in self:
-            record.reviewer_ids_nbr = len(record.reviewer_ids)
-
-    @api.depends("reviewer_ids")
-    def _compute_reviewer_count(self):
-        for record in self:
-            record.reviewer_count = len(record.reviewer_ids)
 
     def _get_module_from_pr(self, url, modules):
         git_token = (
