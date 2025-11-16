@@ -85,7 +85,7 @@ class ModuleRepo(models.Model):
         pr_obj = self.env["pull.request"]
         pr = pr_obj.search([("number", "=", gh_pr.number), ("repo_id", "=", self.id)])
         if pr:
-            vals = pr._prepare_update_pr(gh_pr)
+            vals = pr._prepare_update_pr(self, gh_pr)
             pr.write(vals)
         else:
             vals = pr_obj._prepare_create_pr(self, gh_pr)
