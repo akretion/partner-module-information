@@ -129,14 +129,14 @@ class PullRequest(models.Model):
                 refused_by.append(github_user.id)
         return approved_by, refused_by, waiting_for
 
-    def is_approved(self, approved_by):
+    def is_approved(self, repo, approved_by):
         # OCA orga need 2 approved move this in an extra module
-        if self.repo_id.organization.lower() == "oca":
+        if repo.organization.lower() == "oca":
             return len(approved_by) >= 2
         else:
             return bool(approved_by)
 
-    def _prepare_update_pr(self, pr):
+    def _prepare_update_pr(self, repo, pr):
         approved_by, refused_by, waiting_for = self._get_reviewer_info(pr)
         vals = {
             "date_updated": naive_dt(pr.updated_at),
@@ -147,15 +147,15 @@ class PullRequest(models.Model):
             "refused_reviewer_ids": [Command.set(refused_by)],
         }
 
-        if pr.draft:
-            state = "draft"
-        elif pr.state == "closed":
+        if pr.state == "closed":
             state = "done" if pr.merged else "cancel"
+        elif pr.draft:
+            state = "draft"
         elif refused_by:
             state = "need_fix"
         elif waiting_for:
             state = "waiting_review"
-        elif self.is_approved(approved_by):
+        elif self.is_approved(repo, approved_by):
             state = "approved"
         else:
             state = "need_reviewer"
@@ -182,7 +182,7 @@ class PullRequest(models.Model):
             "author": pr.user.login,
             "orga": pr.head.user.login if pr.head.user else pr.user.login,
         }
-        vals.update(self._prepare_update_pr(pr))
+        vals.update(self._prepare_update_pr(repo, pr))
         return vals
 
     def update_pr(self):
@@ -190,7 +190,7 @@ class PullRequest(models.Model):
         for record in self:
             gh_repo = g.get_repo(f"{record.repo_id.organization}/{record.repo_id.name}")
             gh_pr = gh_repo.get_pull(record.number)
-            record.write(self._prepare_update_pr(gh_pr))
+            record.write(self._prepare_update_pr(self.repo_id, gh_pr))
 
     # TODO review this behaviour of module version
     def _update_module_version(self):
