@@ -60,6 +60,7 @@
                             <field name="repo_id" />
                             <field name="orga" />
                             <field name="author" />
+                            <field name="author_user_id" />
                             <field name="date_open" />
                             <field name="date_updated" />
                             <field name="date_closed" />
@@ -87,6 +88,8 @@
         <field name="model">pull.request</field>
         <field name="arch" type="xml">
             <search string="Pull Request">
+                <field name="orga" />
+                <field name="author" />
                 <field name="author_user_id" />
                 <field name="module_ids" />
                 <field name="repo_id" />
@@ -145,6 +148,11 @@
                         name="group_by_author"
                         string="Author"
                         context="{'group_by': 'author'}"
+                    />
+                    <filter
+                        name="group_by_author_user"
+                        string="Author User"
+                        context="{'group_by': 'author_user_id'}"
                     />
                     <filter
                         name="group_by_version"

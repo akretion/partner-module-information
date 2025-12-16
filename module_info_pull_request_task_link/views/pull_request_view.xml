@@ -32,6 +32,18 @@
                     name="domain"
                 >[('all_waiting_reviewer_ids.user_id', '=', uid)]</attribute>
             </filter>
+            <filter name="group_by_version" position="after">
+                <filter
+                    name="group_by_project"
+                    string="Project"
+                    context="{'group_by': 'project_id'}"
+                />
+                <filter
+                    name="group_by_task"
+                    string="Task"
+                    context="{'group_by': 'task_id'}"
+                />
+            </filter>
         </field>
     </record>
 

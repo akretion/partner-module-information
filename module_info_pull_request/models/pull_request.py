@@ -72,16 +72,15 @@ class PullRequest(models.Model):
         ),
     ]
 
+    # TODO in next version replace the author char by
+    # an m2o author_id (github.user)
     @api.depends("author")
     def _compute_author_user_id(self):
+        gh_users = self.env["github.user"].search([("user_id", "!=", False)])
         for record in self:
-            record.author_user_id = (
-                self.env["res.users"]
-                .search(
-                    [("github_user", "=", record.author), ("github_user", "!=", False)]
-                )
-                .id
-            )
+            record.author_user_id = gh_users.filtered(
+                lambda s, author=record.author: s.login == author
+            ).user_id
 
     def _get_module_from_pr(self, url, modules):
         git_token = (
@@ -191,6 +190,11 @@ class PullRequest(models.Model):
             gh_repo = g.get_repo(f"{record.repo_id.organization}/{record.repo_id.name}")
             gh_pr = gh_repo.get_pull(record.number)
             record.write(self._prepare_update_pr(self.repo_id, gh_pr))
+            record._post_update()
+
+    def _post_update(self):
+        for record in self:
+            record._update_module_version()
 
     # TODO review this behaviour of module version
     def _update_module_version(self):
