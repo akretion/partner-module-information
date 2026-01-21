@@ -90,7 +90,7 @@ class ModuleRepo(models.Model):
         else:
             vals = pr_obj._prepare_create_pr(self, gh_pr)
             pr = pr_obj.create(vals)
-        pr._port_update()
+        pr._post_update()
         return pr
 
     def get_pr_state(self):
