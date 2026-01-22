@@ -14,7 +14,7 @@
                     attrs="{'invisible': [('timesheet_ids', '=', []), ('task_id', '=', False) ]}"
                 >
                     <field
-                        colspan="4"
+                        colspan="2"
                         name="timesheet_ids"
                         mode="tree,kanban"
                         nolabel="1"
