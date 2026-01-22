@@ -1,4 +1,6 @@
+[![Support the OCA](https://odoo-community.org/readme-banner-image)](https://odoo-community.org/get-involved?utm_source=repo-readme)
 
+# Partner Module Information
 <!-- /!\ Non OCA Context : Set here the badge of your runbot / runboat instance. -->
 [![Pre-commit Status](https://github.com/akretion/partner-module-information/actions/workflows/pre-commit.yml/badge.svg?branch=16.0)](https://github.com/akretion/partner-module-information/actions/workflows/pre-commit.yml?query=branch%3A16.0)
 [![Build Status](https://github.com/akretion/partner-module-information/actions/workflows/test.yml/badge.svg?branch=16.0)](https://github.com/akretion/partner-module-information/actions/workflows/test.yml?query=branch%3A16.0)
@@ -6,8 +8,6 @@
 <!-- /!\ Non OCA Context : Set here the badge of your translation instance. -->
 
 <!-- /!\ do not modify above this line -->
-
-# Partner Module Information
 
 Repo for managing odoo modules and follow migration by project
 
