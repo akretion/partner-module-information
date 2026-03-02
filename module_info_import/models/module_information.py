@@ -55,13 +55,13 @@ class ModuleInformation(models.Model):
         repo = self._get_or_create_repo(orga_name, repo_name)
         vals.update({"repo_id": repo.id, "name": module_name})
         module = self.search([("name", "=", module_name), ("partner_id", "=", False)])
+
         if module:
             if module._should_update_module(version.name, orga_name):
                 module.write(vals)
-            module._add_available_version(version)
         else:
-            vals.update({"available_version_ids": [(4, version.id, 0)]})
             module = self.create(vals)
+        module._add_available_version(version)
         return module
 
     @api.model
