@@ -7,9 +7,7 @@
     "website": "https://github.com/akretion/partner-module-information",
     "category": "Tools",
     "depends": [
-        "queue_job",
-        "module_info_pull_request",
-        "analytic",
+        "module_info_pull_request_task_link",
         "hr_timesheet_sheet",
     ],
     "data": [

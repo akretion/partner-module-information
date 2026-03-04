@@ -5,33 +5,19 @@
         <field name="model">pull.request</field>
         <field
             name="inherit_id"
-            ref="module_info_pull_request.pull_request_form_view"
+            ref="module_info_pull_request_task_link.pull_request_form_view"
         />
         <field name="arch" type="xml">
-            <xpath expr="//group[@name='pr_info']" position="inside">
-                <group name="pr_timesheet">
-                    <field name="need_review" />
-                    <field
-                        name="project_id"
-                        attrs="{'required': ['|',('need_review', '=', True),('timesheet_ids', '!=', [])]}"
-                    />
-                    <field
-                        name="task_id"
-                        attrs="{'required': ['|',('need_review', '=', True),('timesheet_ids', '!=', [])]}"
-                    />
-                </group>
-            </xpath>
-            <xpath expr="//group[@name='pr_info']" position="after">
+            <xpath expr="//group[@name='project']" position="after">
                 <group
                     string="Timesheet"
-                    attrs="{'invisible': [('timesheet_ids', '=', []), '|',('project_id', '=', False), ('task_id', '=', False) ]}"
+                    attrs="{'invisible': [('timesheet_ids', '=', []), ('task_id', '=', False) ]}"
                 >
                     <field
-                        colspan="4"
+                        colspan="2"
                         name="timesheet_ids"
                         mode="tree,kanban"
                         nolabel="1"
-                        context="{'default_project_id': project_id, 'default_name':''}"
                     >
                         <tree editable="bottom" default_order="date">
                             <field name="date" />

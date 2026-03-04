@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="pull_request_form_view" model="ir.ui.view">
+        <field name="name">pull.request.form.view</field>
+        <field name="model">pull.request</field>
+        <field
+            name="inherit_id"
+            ref="module_info_pull_request.pull_request_form_view"
+        />
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='pr_info']" position="after">
+                <group name="project" string="Project">
+                    <group name="task">
+                        <field name="project_id" />
+                        <field name="task_id" />
+                        <field name="internal_reviewer_ids" widget="many2many_tags" />
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="pull_request_search_view" model="ir.ui.view">
+        <field name="model">pull.request</field>
+        <field
+            name="inherit_id"
+            ref="module_info_pull_request.pull_request_search_view"
+        />
+        <field name="arch" type="xml">
+            <filter name="my_waiting_review" position="attributes">
+                <attribute
+                    name="domain"
+                >[('all_waiting_reviewer_ids.user_id', '=', uid)]</attribute>
+            </filter>
+            <filter name="group_by_version" position="after">
+                <filter
+                    name="group_by_project"
+                    string="Project"
+                    context="{'group_by': 'project_id'}"
+                />
+                <filter
+                    name="group_by_task"
+                    string="Task"
+                    context="{'group_by': 'task_id'}"
+                />
+            </filter>
+        </field>
+    </record>
+
+    <record id="pull_request_tree_view" model="ir.ui.view">
+        <field name="model">pull.request</field>
+        <field
+            name="inherit_id"
+            ref="module_info_pull_request.pull_request_tree_view"
+        />
+        <field name="arch" type="xml">
+            <field name="waiting_reviewer_ids" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </field>
+            <field name="waiting_reviewer_ids" position="after">
+                <field name="all_waiting_reviewer_ids" widget="many2many_tags" />
+            </field>
+        </field>
+    </record>
+
+</odoo>

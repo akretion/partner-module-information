@@ -10,7 +10,12 @@ class ModulePartner(models.Model):
     _description = "Modules used by partner"
 
     partner_id = fields.Many2one(
-        "res.partner", required=True, index=True, string="Partner", ondelete="cascade"
+        "res.partner",
+        required=True,
+        index=True,
+        string="Partner",
+        ondelete="cascade",
+        readonly=True,
     )
     version_id = fields.Many2one(
         "odoo.version",
@@ -18,6 +23,7 @@ class ModulePartner(models.Model):
         required=True,
         index=True,
         ondelete="cascade",
+        readonly=True,
     )
     module_id = fields.Many2one(
         "module.information",
@@ -25,15 +31,39 @@ class ModulePartner(models.Model):
         index=True,
         string="Module",
         ondelete="cascade",
+        readonly=True,
     )
+    repo_id = fields.Many2one(
+        related="module_id.repo_id",
+        store=True,
+    )
+    organization = fields.Char(
+        related="repo_id.organization",
+        store=True,
+    )
+    module_version_id = fields.Many2one(
+        "module.version",
+        compute="_compute_module_version_id",
+        store=True,
+    )
+
+    def _compute_module_version_id(self):
+        for record in self:
+            record.module_version_id = record.module_id.module_version_ids.filtered(
+                lambda s, record=record: s.version_id == record.version_id
+            )
 
     @api.model
     def _prepare_module_info_vals(self, module_info, partner):
+        repo = self.env["module.repo"]._get_or_create_repo_from_url(
+            module_info["website"]
+        )
         vals = {
             "name": module_info.get("name"),
             "shortdesc": module_info.get("shortdesc"),
             "description": module_info.get("description"),
             "authors": module_info.get("author"),
+            "repo_id": repo.id,
         }
         if module_info["is_custom"]:
             vals["partner_id"] = partner.id

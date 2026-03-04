@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="missing_pull_request_view_tree" model="ir.ui.view">
+        <field name="model">missing.pull.request</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="organization" />
+                <field name="repo_id" />
+                <field name="src_version_id" />
+                <field name="target_version_id" />
+                <field name="pr_id" />
+                <field name="url" widget="url" />
+                <field name="missing_commits" />
+                <field name="state" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="missing_pull_request_view_form" model="ir.ui.view">
+        <field name="model">missing.pull.request</field>
+        <field name="arch" type="xml">
+            <form string="Missing Pull Request">
+                <field name="organization" />
+                <field name="repo_id" />
+                <field name="src_version_id" />
+                <field name="target_version_id" />
+                <field name="pr_id" />
+                <field name="url" widget="url" />
+                <field name="missing_commits" />
+                <field name="state" />
+            </form>
+        </field>
+    </record>
+
+    <record id="missing_pull_request_view_search" model="ir.ui.view">
+        <field name="model">missing.pull.request</field>
+        <field name="arch" type="xml">
+            <search string="Missing Pull Request">
+                <field name="organization" />
+                <field name="repo_id" />
+                <field name="src_version_id" />
+                <field name="target_version_id" />
+                <field name="pr_id" />
+                <field name="state" />
+            </search>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="missing_pull_request_action">
+        <field name="name">Missing Commit Pull Request</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">missing.pull.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="missing_pull_request_view_search" />
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="missing_pull_request_menu"
+        parent="module_info_partner.modules_information_main_config_menu"
+        sequence="20"
+        action="missing_pull_request_action"
+    />
+
+</odoo>

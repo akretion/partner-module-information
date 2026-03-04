@@ -1,12 +1,18 @@
 akretion:
   odoo-usability:
-    duplicate_module_test1: {}
+    duplicate_module_test1:
+      {"description": "description", "name": "name", "author": "author"}
 oca:
   account-financial-tools:
-    duplicate_module_test1: {}
-    duplicate_module_test2: {}
+    duplicate_module_test1:
+      {"description": "description", "name": "name", "author": "author"}
+    duplicate_module_test2:
+      {"description": "description", "name": "name", "author": "author"}
 tiers:
   module:
-    single_module_test: {}
-    duplicate_module_test1: {}
-    duplicate_module_test2: {}
+    single_module_test:
+      {"description": "description", "name": "name", "author": "author"}
+    duplicate_module_test1:
+      {"description": "description", "name": "name", "author": "author"}
+    duplicate_module_test2:
+      {"description": "description", "name": "name", "author": "author"}

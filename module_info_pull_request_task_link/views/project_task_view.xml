@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_task_form2" model="ir.ui.view">
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2" />
+        <field name="arch" type="xml">
+            <page name="extra_info" position="after">
+                <page name="pull_request" string="Pull Requests">
+                    <group>
+                        <field name="pr_ids" nolabel="1" colspan="2" />
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+
+</odoo>

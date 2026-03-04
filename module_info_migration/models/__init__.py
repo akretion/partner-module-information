@@ -1,5 +1,9 @@
 from . import res_partner
 from . import module_information
 from . import module_partner
-
+from . import module_version
+from . import pull_request
+from . import missing_pull_request
 from . import project_task
+from . import project_project
+from . import module_repo

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_task_form2" model="ir.ui.view">
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2" />
+        <field name="arch" type="xml">
+            <page name="extra_info" position="after">
+                <page
+                    name="modules"
+                    string="Modules"
+                    attrs="{'invisible': [('is_migration_project', '=', False)]}"
+                >
+                    <group>
+                        <field name="is_migration_project" invisible="1" />
+                        <field name="module_partner_ids" nolabel="1" colspan="2">
+                            <tree>
+                                <field name="repo_id" />
+                                <field name="module_id" />
+                                <field name="migration_status" />
+                                <button
+                                    name="open_pull_request"
+                                    icon="fa-github"
+                                    type="object"
+                                    title="Open PR"
+                                    attrs="{'invisible': [('migration_status', '!=', 'ongoing_pr')]}"
+                                />
+                            </tree>
+                        </field>
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+
+</odoo>

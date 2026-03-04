@@ -16,7 +16,10 @@
                 <field name="date_closed" />
                 <field name="version_id" />
                 <field name="state" />
-                <field name="reviewer_ids" widget="many2many_tags" />
+                <field name="date_last_state_changed" />
+                <field name="waiting_reviewer_ids" widget="many2many_tags" />
+                <field name="approved_reviewer_ids" widget="many2many_tags" />
+                <field name="refused_reviewer_ids" widget="many2many_tags" />
                 <button
                     name="open_url"
                     type="object"
@@ -33,16 +36,35 @@
         <field name="model">pull.request</field>
         <field name="arch" type="xml">
             <form string="Pull Request">
+                <header>
+                    <button
+                        name="update_pr"
+                        class="oe_highlight"
+                        string="Update manually"
+                        type="object"
+                    />
+                    <field
+                        name="state"
+                        widget="statusbar"
+                        statusbar_visible="draft,need_reviewer,waiting_review,approved,done"
+                    />
+                </header>
                 <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="title" />
+                        </h1>
+                    </div>
                     <group name="pr_head">
                         <group>
-                            <field name="title" />
                             <field name="repo_id" />
                             <field name="orga" />
                             <field name="author" />
+                            <field name="author_user_id" />
                             <field name="date_open" />
                             <field name="date_updated" />
                             <field name="date_closed" />
+                            <field name="date_last_state_changed" />
                         </group>
                         <group>
                             <field name="state" />
@@ -54,7 +76,6 @@
                     <group name="pr_info">
                         <group>
                         <field name="module_ids" widget="many2many_tags" />
-                        <field name="reviewer_ids" widget="many2many_tags" />
                         </group>
                     </group>
                 </sheet>
@@ -67,17 +88,20 @@
         <field name="model">pull.request</field>
         <field name="arch" type="xml">
             <search string="Pull Request">
+                <field name="orga" />
+                <field name="author" />
                 <field name="author_user_id" />
                 <field name="module_ids" />
+                <field name="repo_id" />
                 <filter
                     name="opened"
                     string="Opened PR"
-                    domain="[('state', '=', 'open')]"
+                    domain="[('state', 'not in', ['cancel', 'done'])]"
                 />
                 <filter
                     name="closed"
                     string="Closed PR"
-                    domain="[('state', '=', 'closed')]"
+                    domain="[('state', 'in', ['cancel', 'done'])]"
                 />
                 <separator />
                 <filter
@@ -93,21 +117,23 @@
                 <filter name="v16" string="V16" domain="" />
                 <separator />
                 <filter
-                    name="myreview"
-                    string="My Reviews"
-                    domain="[('reviewer_ids', '=', uid)]"
-                />
-                <filter
-                    name="availablereview"
-                    string="Available Review"
-                    domain="[('reviewer_ids_nbr', '&lt;', 2 )]"
-                />
-                <filter
                     name="mypr"
                     string="My PR"
                     domain="[('author_user_id', '=', uid )]"
                 />
+                <separator />
+                <filter
+                    name="my_waiting_review"
+                    string="Waiting for my Review"
+                    domain="[('waiting_reviewer_ids.user_id', '=', uid)]"
+                />
+                <separator />
                 <group expand="0" string="Group By">
+                    <filter
+                        name="group_by_state"
+                        string="State"
+                        context="{'group_by': 'state'}"
+                    />
                     <filter
                         name="group_by_repo"
                         string="Repo"
@@ -122,6 +148,11 @@
                         name="group_by_author"
                         string="Author"
                         context="{'group_by': 'author'}"
+                    />
+                    <filter
+                        name="group_by_author_user"
+                        string="Author User"
+                        context="{'group_by': 'author_user_id'}"
                     />
                     <filter
                         name="group_by_version"
@@ -142,7 +173,6 @@
         <field name="context">{'search_default_opened': 1}</field>
     </record>
 
-
     <menuitem
         id="pull_request_main_menu"
         name="PR"
@@ -150,6 +180,5 @@
         action="pull_request_action"
         sequence="2"
     />
-
 
 </odoo>

@@ -1,10 +1,13 @@
 import logging
 import re
-from datetime import datetime
+from datetime import date
 
 import requests
 
 from odoo import api, fields, models
+from odoo.fields import Command
+
+from ..tools import naive_dt
 
 _logger = logging.getLogger(__name__)
 
@@ -23,19 +26,42 @@ class PullRequest(models.Model):
         "module.information", string="Related Modules", readonly=True
     )
     version_id = fields.Many2one("odoo.version", readonly=True, index=True)
-    reviewer_ids = fields.Many2many("res.users")
-    reviewer_count = fields.Integer(compute="_compute_reviewer_count", readonly=True)
-    state = fields.Char(index=True, readonly=True)
+    state = fields.Selection(
+        selection=[
+            ("draft", "Draft"),
+            ("need_reviewer", "Need Reviewer"),
+            ("waiting_review", "Waiting Review"),
+            ("need_fix", "Need Fix"),
+            ("approved", "Approved"),
+            ("done", "Merged"),
+            ("cancel", "Cancel"),
+        ],
+        index=True,
+        readonly=True,
+    )
+    date_last_state_changed = fields.Date(readonly=True)
     url = fields.Char(readonly=True)
     number = fields.Integer(index=True, string="Github number", readonly=True)
     author = fields.Char(index=True, readonly=True)
     orga = fields.Char(index=True, readonly=True)
     need_review = fields.Boolean(string="Review requested")
-    reviewer_ids_nbr = fields.Integer(
-        compute="_compute_reviewer_ids_nbr", readonly=True, store=True
-    )
     author_user_id = fields.Many2one(
         "res.users", compute="_compute_author_user_id", store=True
+    )
+    waiting_reviewer_ids = fields.Many2many(
+        "github.user",
+        relation="github_user_pull_request_waiting_rel",
+        readonly=True,
+    )
+    approved_reviewer_ids = fields.Many2many(
+        "github.user",
+        relation="github_user_pull_request_approved_rel",
+        readonly=True,
+    )
+    refused_reviewer_ids = fields.Many2many(
+        "github.user",
+        relation="github_user_pull_request_refused_rel",
+        readonly=True,
     )
 
     _sql_constraints = [
@@ -46,26 +72,15 @@ class PullRequest(models.Model):
         ),
     ]
 
+    # TODO in next version replace the author char by
+    # an m2o author_id (github.user)
     @api.depends("author")
     def _compute_author_user_id(self):
+        gh_users = self.env["github.user"].search([("user_id", "!=", False)])
         for record in self:
-            record.author_user_id = (
-                self.env["res.users"]
-                .search(
-                    [("github_user", "=", record.author), ("github_user", "!=", False)]
-                )
-                .id
-            )
-
-    @api.depends("reviewer_ids")
-    def _compute_reviewer_ids_nbr(self):
-        for record in self:
-            record.reviewer_ids_nbr = len(record.reviewer_ids)
-
-    @api.depends("reviewer_ids")
-    def _compute_reviewer_count(self):
-        for record in self:
-            record.reviewer_count = len(record.reviewer_ids)
+            record.author_user_id = gh_users.filtered(
+                lambda s, author=record.author: s.login == author
+            ).user_id
 
     def _get_module_from_pr(self, url, modules):
         git_token = (
@@ -89,57 +104,99 @@ class PullRequest(models.Model):
                 module_ids.append(module_id)
         return module_ids
 
-    def create_or_update_pr(self, pr, repo, modules_info, odoo_version):
-        vals = {}
-        pr_obj = self.search(
-            [("number", "=", pr["number"]), ("repo_id", "=", repo[0].id)]
-        )
-        if pr_obj and pr_obj.state == "open":
-            # Closed PR has no update
-            # PR exist in bdd and is open
+    def _get_reviewer_info(self, pr):
+        waiting_for = []
+        for reviewer in pr.requested_reviewers:
+            waiting_for.append(self.env["github.user"]._get_or_create(reviewer).id)
 
+        # get the last review of each user
+        user2review = {}
+        for review in pr.get_reviews():
+            user2review[review.user] = review.state
+
+        approved_by = []
+        refused_by = []
+        for reviewer, state in user2review.items():
+            github_user = self.env["github.user"]._get_or_create(reviewer)
+            if github_user.id in waiting_for:
+                # If a user is have a requested review we do not care
+                # of his previous review
+                continue
+            if state == "APPROVED":
+                approved_by.append(github_user.id)
+            elif state == "CHANGES_REQUESTED":
+                refused_by.append(github_user.id)
+        return approved_by, refused_by, waiting_for
+
+    def is_approved(self, repo, approved_by):
+        # OCA orga need 2 approved move this in an extra module
+        if repo.organization.lower() == "oca":
+            return len(approved_by) >= 2
+        else:
+            return bool(approved_by)
+
+    def _prepare_update_pr(self, repo, pr):
+        approved_by, refused_by, waiting_for = self._get_reviewer_info(pr)
+        vals = {
+            "date_updated": naive_dt(pr.updated_at),
+            "title": pr.title,
+            "date_closed": naive_dt(pr.closed_at),
+            "waiting_reviewer_ids": [Command.set(waiting_for)],
+            "approved_reviewer_ids": [Command.set(approved_by)],
+            "refused_reviewer_ids": [Command.set(refused_by)],
+        }
+
+        if pr.state == "closed":
+            state = "done" if pr.merged else "cancel"
+        elif pr.draft:
+            state = "draft"
+        elif refused_by:
+            state = "need_fix"
+        elif waiting_for:
+            state = "waiting_review"
+        elif self.is_approved(repo, approved_by):
+            state = "approved"
+        else:
+            state = "need_reviewer"
+        if self.state != state:
+            # Note in case of create the self is an empty browse record
+            # and so the state is always different
             vals.update(
                 {
-                    "date_updated": datetime.strptime(
-                        pr["updated_at"], "%Y-%m-%dT%H:%M:%SZ"
-                    ).strftime("%Y-%m-%d %H:%M:%S")
+                    "state": state,
+                    "date_last_state_changed": date.today(),
                 }
             )
-            if pr.get("closed_at", False):
-                vals.update(
-                    {
-                        "date_closed": datetime.strptime(
-                            pr["closed_at"], "%Y-%m-%dT%H:%M:%SZ"
-                        ).strftime("%Y-%m-%d %H:%M:%S"),
-                        "state": pr["state"],
-                    }
-                )
-            pr_obj.write(vals)
-            pr_obj._update_module_version()
+        return vals
 
-        elif not pr_obj and pr["state"] == "open":
-            # PR not exist in bdd
-            vals.update(
-                {
-                    "title": pr["title"],
-                    "number": pr["number"],
-                    "repo_id": repo[0].id,
-                    "date_open": datetime.strptime(
-                        pr["created_at"], "%Y-%m-%dT%H:%M:%SZ"
-                    ).strftime("%Y-%m-%d %H:%M:%S"),
-                    "module_ids": [
-                        (6, 0, self._get_module_from_pr(pr["diff_url"], modules_info))
-                    ],
-                    "version_id": odoo_version.get(pr["base"]["ref"][:4], ""),
-                    "state": pr["state"],
-                    "url": pr["html_url"],
-                    "author": pr["user"]["login"],
-                    "orga": pr["head"]["user"]["login"],
-                }
-            )
-            pr_obj = pr_obj.create(vals)
-            pr_obj._update_module_version()
+    def _prepare_create_pr(self, repo, pr):
+        modules = {m.name: m.id for m in repo.module_ids}
+        vals = {
+            "repo_id": repo.id,
+            "number": pr.number,
+            "date_open": naive_dt(pr.created_at),
+            "module_ids": [(6, 0, self._get_module_from_pr(pr.diff_url, modules))],
+            "version_id": self.env["odoo.version"]._get_id(pr.base.ref[:4]),
+            "url": pr.html_url,
+            "author": pr.user.login,
+            "orga": pr.head.user.login if pr.head.user else pr.user.login,
+        }
+        vals.update(self._prepare_update_pr(repo, pr))
+        return vals
 
+    def update_pr(self):
+        g = self.env["module.repo"]._get_github_client()
+        for record in self:
+            gh_repo = g.get_repo(f"{record.repo_id.organization}/{record.repo_id.name}")
+            gh_pr = gh_repo.get_pull(record.number)
+            record.write(self._prepare_update_pr(self.repo_id, gh_pr))
+            record._post_update()
+
+    def _post_update(self):
+        for record in self:
+            record._update_module_version()
+
+    # TODO review this behaviour of module version
     def _update_module_version(self):
         # manage module version depending on PRs
         # If there is a PR, then make sure we have at least a pending module version
@@ -167,7 +224,7 @@ class PullRequest(models.Model):
             # if there is no other PR
             module_versions = self.env["module.version"].search(
                 [
-                    ("module_id", "=", self.module_ids.ids),
+                    ("module_id", "in", self.module_ids.ids),
                     ("version_id", "=", self.version_id.id),
                     ("state", "=", "pending"),
                 ]

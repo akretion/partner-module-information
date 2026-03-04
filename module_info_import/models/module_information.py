@@ -35,31 +35,34 @@ class ModuleInformation(models.Model):
             data = self.get_module_info(version.name)
             for orga, repos in data.items():
                 for repo, modules in repos.items():
-                    for module_name, vals in modules.items():
+                    for module_name, values in modules.items():
+                        vals = self._prepare_vals(values)
                         self._update_or_create_modules(
                             version, orga, repo, module_name, vals
                         )
+
+    def _prepare_vals(self, values):
+        return {
+            "description": values["description"],
+            "shortdesc": values["name"],
+            "authors": values["author"],
+        }
 
     @api.model
     def _update_or_create_modules(
         self, version, orga_name, repo_name, module_name, vals
     ):
         repo = self._get_or_create_repo(orga_name, repo_name)
-        vals = {
-            "repo_id": repo.id,
-            "name": module_name,
-            "description": vals["description"],
-            "shortdesc": vals["name"],
-            "authors": vals["author"],
-        }
+        vals.update({"repo_id": repo.id, "name": module_name})
         module = self.search([("name", "=", module_name), ("partner_id", "=", False)])
+
         if module:
             if module._should_update_module(version.name, orga_name):
                 module.write(vals)
-            module._add_available_version(version)
         else:
-            vals.update({"available_version_ids": [(4, version.id, 0)]})
             module = self.create(vals)
+        module._add_available_version(version)
+        return module
 
     @api.model
     def _get_or_create_repo(self, orga_name, repo_name):
@@ -70,7 +73,11 @@ class ModuleInformation(models.Model):
             return repo
         else:
             return self.env["module.repo"].create(
-                {"organization": orga_name, "name": repo_name}
+                {
+                    "organization": orga_name,
+                    "name": repo_name,
+                    "url": f"https://github.com/{orga_name}/{repo_name}",
+                }
             )
 
     @api.model

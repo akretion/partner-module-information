@@ -33,6 +33,8 @@
                         <field name="name" />
                         <field name="organization" />
                         <field name="url" />
+                        <field name="date_last_updated" />
+                        <field name="ignore_pr_import" />
                     </group>
                 </sheet>
             </form>

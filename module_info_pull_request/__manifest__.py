@@ -10,13 +10,15 @@
     "data": [
         "data/ir_cron.xml",
         "data/ir_config_parameter.xml",
+        "data/github_user_data.xml",
         "views/pull_request.xml",
         "security/ir.model.access.csv",
         "views/module_information.xml",
         "views/module_repo.xml",
         "views/res_partner.xml",
         "views/res_users.xml",
+        "views/github_user_view.xml",
     ],
     "installable": True,
-    "external_dependencies": {"python": ["pyyaml"]},
+    "external_dependencies": {"python": ["pyyaml", "PyGithub"]},
 }

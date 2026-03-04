@@ -1,9 +1,10 @@
 import logging
-from datetime import datetime
 
-import requests
+from github import Auth, Github
 
-from odoo import fields, models
+from odoo import api, fields, models
+
+from ..tools import naive_dt
 
 # from odoo.tools import date_utils
 
@@ -13,8 +14,19 @@ _logger = logging.getLogger(__name__)
 class ModuleRepo(models.Model):
     _inherit = "module.repo"
 
-    date_last_updated = fields.Datetime(string="Last Update date", readonly=True)
-    ignore_pr_import = fields.Boolean()
+    date_last_updated = fields.Datetime(string="Last Update date")
+    ignore_pr_import = fields.Boolean(
+        compute="_compute_ignore_pr_import",
+        store=True,
+        readonly=False,
+    )
+
+    @api.depends("url")
+    def _compute_ignore_pr_import(self):
+        for record in self:
+            record.ignore_pr_import = not record.url or not record.url.startswith(
+                "https://github.com"
+            )
 
     def cron_import_pr(self):
         repos = self.search([("ignore_pr_import", "!=", True)])
@@ -32,75 +44,54 @@ class ModuleRepo(models.Model):
             if i % job_num_by_hour == 0:
                 eta += 60 * 60
 
-    def import_pr(self):
-        git_token = (
+    def _get_github_client(self):
+        github_token = (
             self.env["ir.config_parameter"]
             .sudo()
             .get_param("module.info.pull.request.git.token")
         )
-        odoo_version_dct = {v.name: v.id for v in self.env["odoo.version"].search([])}
-        for repo in self:
-            modules = {m.name: m.id for m in repo.module_ids}
-            if repo.date_last_updated:
-                # call api search, sort by date desc
-                # stop pagination when date correspond to date_last_updated
-                page = 1
-                prs = []
-                while True:
-                    url = (
-                        f"https://api.github.com/repos/{repo.organization}"
-                        f"/{repo.name}/pulls?state=all&per_page=10&page={page}"
-                        "&sort=updated&direction=desc"
-                    )
-                    response = requests.get(
-                        url,
-                        headers={"authorization": f"Bearer {git_token}"},
-                        timeout=120,
-                    )
-                    if len(response.json()):
-                        prs.extend(response.json())
-                        if (
-                            datetime.strptime(
-                                response.json()[-1]["updated_at"], "%Y-%m-%dT%H:%M:%SZ"
-                            )
-                            < repo.date_last_updated
-                        ):
-                            break
-                    page += 1
-            else:
-                # Init of PR's repo
-                # Call api pulls to get all openned pr
-                page = 1
-                result = 1
-                prs = []
-                while result:
-                    url = (
-                        f"https://api.github.com/repos/{repo.organization}"
-                        f"/{repo.name}/pulls?per_page=40&page={page}"
-                    )
-                    response = requests.get(
-                        url,
-                        headers={"authorization": f"Bearer {git_token}"},
-                        timeout=120,
-                    )
-                    if len(response.json()):
-                        prs.extend(response.json())
-                    result = len(response.json())
-                    page += 1
+        if github_token:
+            g = Github(auth=Auth.Token(github_token))
+        else:
+            g = Github()
+        return g
 
-            if prs:
-                max_updated = prs[0]["updated_at"]
-            for pr in prs:
-                if not odoo_version_dct.get(pr["base"]["ref"][:4], False):
-                    continue
-                self.env["pull.request"].create_or_update_pr(
-                    pr, repo, modules, odoo_version_dct
-                )
-                max_updated = max(pr["updated_at"], max_updated)
-            if prs:
-                repo.date_last_updated = datetime.strptime(
-                    max_updated, "%Y-%m-%dT%H:%M:%SZ"
-                ).strftime("%Y-%m-%d")
+    def import_pr(self):
+        g = self._get_github_client()
+        for repo in self:
+            gh_repo = g.get_repo(f"{repo.organization}/{repo.name}")
+            state = "all" if repo.date_last_updated else "open"
+            last_updated = repo.date_last_updated
+            new_last_updated = None
+            for pr in gh_repo.get_pulls(state=state, sort="updated", direction="desc"):
+                if last_updated and last_updated >= naive_dt(pr.updated_at):
+                    # stop as this PR have been already processed
+                    break
+                if not new_last_updated:
+                    new_last_update = naive_dt(pr.updated_at)
+                self._create_or_update_pr(pr)
+            if new_last_updated:
+                repo.date_last_updated = new_last_update
+
+    def import_pr_number(self, number):
+        self.ensure_one()
+        g = self._get_github_client()
+        gh_repo = g.get_repo(f"{self.organization}/{self.name}")
+        gh_pr = gh_repo.get_pull(number)
+        return self._create_or_update_pr(gh_pr)
+
+    def _create_or_update_pr(self, gh_pr):
+        self.ensure_one()
+        pr_obj = self.env["pull.request"]
+        pr = pr_obj.search([("number", "=", gh_pr.number), ("repo_id", "=", self.id)])
+        if pr:
+            vals = pr._prepare_update_pr(self, gh_pr)
+            pr.write(vals)
+        else:
+            vals = pr_obj._prepare_create_pr(self, gh_pr)
+            pr = pr_obj.create(vals)
+        pr._post_update()
+        return pr
 
     def get_pr_state(self):
         self.import_pr()

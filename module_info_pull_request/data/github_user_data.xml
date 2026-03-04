@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="ghost_user" model="github.user">
+        <field name="login">ghost</field>
+        <field name="name">Deleted User</field>
+        <field name="github_ext_id">10137</field>
+    </record>
+
+</odoo>
