@@ -63,7 +63,7 @@ class PullRequest(models.Model):
                 waiting_internal + record.waiting_reviewer_ids
             )
 
-    @api.depends("task_id")
+    @api.depends("task_id.reviewer_ids")
     def _compute_internal_reviewer_ids(self):
         for record in self:
             record.internal_reviewer_ids = record.task_id.reviewer_ids

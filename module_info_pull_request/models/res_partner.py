@@ -1,4 +1,7 @@
 from odoo import fields, models
+from odoo.osv import expression
+
+OPEN_PR = [("state", "not in", ("done", "cancel"))]
 
 
 class ResPartner(models.Model):
@@ -22,36 +25,29 @@ class ResPartner(models.Model):
     def _compute_current_pr_nbr(self):
         for record in self:
             record.current_pr_nbr = self.env["pull.request"].search_count(
-                record._get_domain_current_pr()
+                expression.AND([record._get_domain_current_pr(), OPEN_PR])
             )
 
     def _compute_higher_pr_nbr(self):
         for record in self:
             record.higher_pr_nbr = self.env["pull.request"].search_count(
-                record._get_domain_higher_pr()
+                expression.AND([record._get_domain_higher_pr(), OPEN_PR])
             )
 
-    def get_action_pr_tree_current(self):
-        prs = self.env["pull.request"].search(self._get_domain_current_pr())
+    def _get_action_pr(self, name, domain):
+        action = self.env["ir.actions.actions"]._for_xml_id(
+            "module_info_pull_request.pull_request_action"
+        )
+        action.update({"name": name, "domain": domain})
+        return action
 
-        current_pr = prs.mapped("id")
-        return {
-            "type": "ir.actions.act_window",
-            "res_model": "pull.request",
-            "name": f"Current Pull Request for {self.name}",
-            "views": [],
-            "view_mode": "tree,form",
-            "domain": [["id", "in", current_pr]],
-        }
+    def get_action_pr_tree_current(self):
+        return self._get_action_pr(
+            f"Current Pull Request for {self.name}", self._get_domain_current_pr()
+        )
 
     def get_action_pr_tree_higher(self):
-        prs = self.env["pull.request"].search(self._get_domain_higher_pr())
-        current_pr = prs.mapped("id")
-        return {
-            "type": "ir.actions.act_window",
-            "res_model": "pull.request",
-            "name": f"Higher version Pull Request for {self.name}",
-            "views": [],
-            "view_mode": "tree,form",
-            "domain": [["id", "in", current_pr]],
-        }
+        return self._get_action_pr(
+            f"Higher version Pull Request for {self.name}",
+            self._get_domain_higher_pr(),
+        )
