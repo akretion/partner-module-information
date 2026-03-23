@@ -5,7 +5,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyHeader
 
-from odoo import SUPERUSER_ID, _, api, fields, models
+from odoo import SUPERUSER_ID, api, fields, models
 from odoo.api import Environment
 from odoo.exceptions import ValidationError
 
@@ -61,7 +61,7 @@ class FastapiEndpoint(models.Model):
         for rec in self:
             if rec.app == "partner_module" and not rec.module_auth_method:
                 raise ValidationError(
-                    _(
+                    self.env._(
                         "The authentication method is required for app %(app)s",
                         app=rec.app,
                     )
@@ -81,7 +81,7 @@ class FastapiEndpoint(models.Model):
     def _get_app(self):
         app = super()._get_app()
         if self.app == "partner_module":
-            app.dependency_overrides[
-                authenticated_partner_impl
-            ] = api_key_based_authenticated_partner_impl
+            app.dependency_overrides[authenticated_partner_impl] = (
+                api_key_based_authenticated_partner_impl
+            )
         return app

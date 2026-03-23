@@ -14,14 +14,11 @@ class OdooVersion(models.Model):
     def _get_id(self, name):
         return self.env["odoo.version"].search([("name", "=", name)]).id
 
-    def _clear_get_version_cache(self):
-        self._get_id.clear_cache(self.env[self._name])
-
-    @api.model
-    def create(self, vals):
-        self._clear_get_version_cache()
-        return super().create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        self.env.registry.clear_cache()
+        return super().create(vals_list)
 
     def write(self, vals):
-        self._clear_get_version_cache()
+        self.env.registry.clear_cache()
         return super().write(vals)

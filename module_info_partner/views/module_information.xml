@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-
     <menuitem
         id="module_info_menu_root"
         name="Partner Modules"
@@ -46,14 +45,14 @@
     </record>
 
     <record id="module_information_tree_view" model="ir.ui.view">
-        <field name="name">module.information.tree.view</field>
+        <field name="name">module.information.list.view</field>
         <field name="model">module.information</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name" />
                 <field name="repo_id" />
                 <field name="authors" />
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -73,10 +72,10 @@
                     <notebook>
                         <page string="Versions And modules">
                             <field name="module_partner_ids">
-                                <tree default_order="version_id">
+                                <list default_order="version_id">
                                     <field name="partner_id" />
                                     <field name="version_id" />
-                                </tree>
+                                </list>
                             </field>
                             <field name="note" placeholder="Note interne" />
                             <separator string="Available Versions" />
@@ -108,13 +107,11 @@
         </field>
     </record>
 
-
-
     <record id="module_information_action" model="ir.actions.act_window">
         <field name="name">Module Information</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">module.information</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="module_information_search_view" />
     </record>
 
@@ -125,5 +122,4 @@
         action="module_information_action"
         sequence="3"
     />
-
 </odoo>

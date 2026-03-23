@@ -13,5 +13,4 @@
             eval="[Command.set([ref('module_info_partner.group_partner_module_rest_api'), ref('base.group_user')])]"
         />
     </record>
-
 </odoo>

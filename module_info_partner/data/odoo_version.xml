@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo noupdate="1">
-
     <record id="odoo_version_14" model="odoo.version">
         <field name="name">14.0</field>
     </record>
@@ -12,5 +11,4 @@
     <record id="odoo_version_16" model="odoo.version">
         <field name="name">16.0</field>
     </record>
-
 </odoo>

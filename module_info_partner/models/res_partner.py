@@ -16,7 +16,7 @@ class ResPartner(models.Model):
             "res_model": "module.information",
             "name": f"Modules used by {self.name}",
             "views": [],
-            "view_mode": "tree,form",
+            "view_mode": "list,form",
             "domain": [["id", "in", modules]],
         }
 

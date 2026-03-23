@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-
     <record id="res_partner_form_view" model="ir.ui.view">
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form" />
@@ -17,11 +16,11 @@
     </record>
 
     <record id="view_module_partner_kanban" model="ir.ui.view">
-            <field name="name">module.partner.kanban</field>
-            <field name="model">res.partner</field>
-            <field eval="1500" name="priority" />
-            <field name="arch" type="xml">
-            <kanban class="oe_background_grey" create="0">
+        <field name="name">module.partner.kanban</field>
+        <field name="model">res.partner</field>
+        <field name="priority" eval="1500" />
+        <field name="arch" type="xml">
+            <kanban create="0">
                 <field name="id" />
                 <field name="name" />
                 <field name="title" />
@@ -29,44 +28,47 @@
                 <field name="module_nbr" />
                 <field name="version_id" />
                 <templates>
-                    <t t-name="kanban-box">
-                        <div class="oe_kanban_card oe_kanban_global_click">
-                            <div class="position-absolute top-0 end-0 mt-2 me-2">
-                                <span
-                                    class="badge rounded-pill text-bg-info"
-                                    t-if="record.version_id.raw_value"
-                                >
-                                    <field name="version_id" />
-                                </span>
-                            </div>
-                            <div class="o_kanban_image">
+                    <t t-name="card">
+                        <div class="d-flex flex-row">
+                            <div class="o_kanban_image_fill_left d-none d-md-block">
                                 <img
-                                    alt="Contact image"
                                     t-if="record.image_128.raw_value"
                                     t-att-src="kanban_image('res.partner', 'image_128', record.id.raw_value)"
+                                    alt="Contact image"
+                                    class="o_image_64_contain"
                                 />
                             </div>
 
-                            <div id="project_box">
-                                <div style="font-weight:bold;">
-                                    <field name="name" />
+                            <div class="oe_kanban_details d-flex flex-column">
+                                <div class="position-absolute top-0 end-0 mt-2 me-2">
+                                    <span
+                                        class="badge rounded-pill text-bg-info"
+                                        t-if="record.version_id.raw_value"
+                                    >
+                                        <field name="version_id" />
+                                    </span>
                                 </div>
-                                <div>
+
+                                <strong class="o_kanban_record_title">
+                                    <field name="name" />
+                                </strong>
+
+                                <div id="project_box" class="mt-auto">
                                     <a
                                         name="get_action_module_information_tree"
                                         type="object"
+                                        class="text-decoration-none"
                                     >
-                                        <span>Module installed: <t
-                                                t-esc="record.module_nbr.value"
-                                            /></span>
+                                        <span>Module installed: </span>
+                                        <field name="module_nbr" />
                                     </a>
                                 </div>
-                           </div>
+                            </div>
                         </div>
                     </t>
                 </templates>
             </kanban>
-            </field>
+        </field>
     </record>
 
     <record id="module_partner_project_action" model="ir.actions.act_window">
@@ -80,10 +82,10 @@
     </record>
 
     <record id="module_partner_project_action_view2" model="ir.actions.act_window.view">
-            <field eval="10" name="sequence" />
-            <field name="view_mode">kanban</field>
-            <field name="view_id" ref="view_module_partner_kanban" />
-            <field name="act_window_id" ref="module_partner_project_action" />
+        <field eval="10" name="sequence" />
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="view_module_partner_kanban" />
+        <field name="act_window_id" ref="module_partner_project_action" />
     </record>
 
     <menuitem
@@ -93,5 +95,4 @@
         action="module_partner_project_action"
         sequence="0"
     />
-
 </odoo>
