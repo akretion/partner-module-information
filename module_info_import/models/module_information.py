@@ -3,12 +3,12 @@ import logging
 import requests
 import yaml
 
-from odoo import _, api, models
+from odoo import api, models
 
 _logger = logging.getLogger(__name__)
 
 
-ERROR_MESSAGE = _("There is an issue with module information synchronization")
+ERROR_MESSAGE = "There is an issue with module information synchronization"
 
 
 class ModuleInformation(models.Model):
