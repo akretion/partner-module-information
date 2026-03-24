@@ -8,7 +8,7 @@ from odoo import fields, models
 class ModuleVersion(models.Model):
     _inherit = "module.version"
 
-    migrations = fields.Json(helper="Migration information from odoo repository")
+    migrations = fields.Json(help="Migration information from odoo repository")
 
     def _update_migration_hook(self):
         """Hook that can do extra processing after updating the migrations fields"""
