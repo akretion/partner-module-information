@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo noupdate="1">
+    <record id="module_info_api_key_parameter" model="ir.config_parameter">
+        <field name="key">module.api.key</field>
+        <field name="value">TO CONFIGURE</field>
+    </record>
 
-<record id="module_info_api_key_parameter" model="ir.config_parameter">
-    <field name="key">module.api.key</field>
-    <field name="value">TO CONFIGURE</field>
-</record>
+    <record id="module_info_url_parameter" model="ir.config_parameter">
+        <field name="key">module.api.url</field>
+        <field name="value">TO CONFIGURE</field>
+    </record>
 
-<record id="module_info_url_parameter" model="ir.config_parameter">
-    <field name="key">module.api.url</field>
-    <field name="value">TO CONFIGURE</field>
-</record>
-
-<record id="module_info_custom_path" model="ir.config_parameter">
-    <field name="key">module.custom.path</field>
-    <field name="value">/local-src/</field>
-</record>
-
+    <record id="module_info_custom_path" model="ir.config_parameter">
+        <field name="key">module.custom.path</field>
+        <field name="value">/local-src/</field>
+    </record>
 </odoo>
