@@ -33,15 +33,15 @@ Available addons
 ----------------
 addon | version | maintainers | summary
 --- | --- | --- | ---
-[module_info_import](module_info_import/) | 16.0.1.0.0 |  | Get information about modules from akretion/odoo-module-tracker
-[module_info_import_odoo_repository](module_info_import_odoo_repository/) | 16.0.1.0.0 |  | Get information about modules from akretion/odoo-module-tracker
-[module_info_migration](module_info_migration/) | 16.0.1.0.0 |  | Module Info Migration
-[module_info_partner](module_info_partner/) | 16.0.1.0.0 |  | Information about odoo modules used by your partners
-[module_info_pull_request](module_info_pull_request/) | 16.0.1.0.0 |  | Information about Pull Request state on modules
-[module_info_pull_request_migration](module_info_pull_request_migration/) | 16.0.1.0.0 |  | Link pull request to migration task
-[module_info_pull_request_task_link](module_info_pull_request_task_link/) | 16.0.1.0.0 |  | Allow to link PR to a task
-[module_info_pull_request_timesheet](module_info_pull_request_timesheet/) | 16.0.1.0.0 |  | Add timesheet to Pull request
-[module_info_push](module_info_push/) | 16.0.1.0.0 |  | Send information about installed module in the database
+[module_info_import](module_info_import/) | 18.0.1.0.0 |  | Get information about modules from akretion/odoo-module-tracker
+[module_info_import_odoo_repository](module_info_import_odoo_repository/) | 18.0.1.0.0 |  | Get information about modules from akretion/odoo-module-tracker
+[module_info_migration](module_info_migration/) | 18.0.1.0.0 |  | Module Info Migration
+[module_info_partner](module_info_partner/) | 18.0.1.0.0 |  | Information about odoo modules used by your partners
+[module_info_pull_request](module_info_pull_request/) | 18.0.1.0.0 |  | Information about Pull Request state on modules
+[module_info_pull_request_migration](module_info_pull_request_migration/) | 18.0.1.0.0 |  | Link pull request to migration task
+[module_info_pull_request_task_link](module_info_pull_request_task_link/) | 18.0.1.0.0 |  | Allow to link PR to a task
+[module_info_pull_request_timesheet](module_info_pull_request_timesheet/) | 18.0.1.0.0 |  | Add timesheet to Pull request
+[module_info_push](module_info_push/) | 18.0.1.0.0 |  | Send information about installed module in the database
 
 [//]: # (end addons)
 
