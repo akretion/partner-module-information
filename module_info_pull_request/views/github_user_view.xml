@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
-
     <record id="github_user_view_tree" model="ir.ui.view">
         <field name="model">github.user</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name" />
                 <field name="login" />
                 <field name="company" />
                 <field name="github_ext_id" />
                 <field name="user_id" />
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -44,7 +43,7 @@
         <field name="name">Github User</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">github.user</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="github_user_view_search" />
         <field name="domain">[]</field>
         <field name="context">{}</field>
@@ -56,5 +55,4 @@
         sequence="20"
         action="github_user_action"
     />
-
 </odoo>

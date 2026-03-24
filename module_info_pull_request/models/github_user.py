@@ -7,6 +7,7 @@ from odoo import api, fields, models, tools
 
 class GithubUser(models.Model):
     _name = "github.user"
+    _description = "Github Users"
 
     name = fields.Char(readonly=True)
     login = fields.Char(readonly=True)
@@ -17,9 +18,6 @@ class GithubUser(models.Model):
     @tools.ormcache("github_ext_id")
     def _get_from_ext_id(self, github_ext_id):
         return self.search([("github_ext_id", "=", github_ext_id)]).id
-
-    def _clear_get_version_cache(self):
-        self._get_from_ext_id.clear_cache(self.env[self._name])
 
     def _get_or_create(self, gh_user):
         if gh_user:
@@ -41,11 +39,11 @@ class GithubUser(models.Model):
             # but in the API it's not replaced, the gh_user is None
             return self.env.ref("module_info_pull_request.ghost_user")
 
-    @api.model
-    def create(self, vals):
-        self._clear_get_version_cache()
-        return super().create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        self.env.registry.clear_cache()
+        return super().create(vals_list)
 
     def write(self, vals):
-        self._clear_get_version_cache()
+        self.env.registry.clear_cache()
         return super().write(vals)

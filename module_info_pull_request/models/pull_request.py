@@ -14,6 +14,7 @@ _logger = logging.getLogger(__name__)
 
 class PullRequest(models.Model):
     _name = "pull.request"
+    _description = "Pull Requests"
 
     title = fields.Char(index=True, readonly=True)
     repo_id = fields.Many2one(

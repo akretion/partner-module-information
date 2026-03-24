@@ -20,6 +20,6 @@ class ModuleInformation(models.Model):
             "type": "ir.actions.act_window",
             "name": ("Pull Request"),
             "res_model": "pull.request",
-            "view_mode": "tree,form",
+            "view_mode": "list,form",
             "domain": [("module_ids", "=", self.id)],
         }

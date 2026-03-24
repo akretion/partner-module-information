@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-
     <record id="pull_request_tree_view" model="ir.ui.view">
-        <field name="name">pull.request.tree.view</field>
+        <field name="name">pull.request.list.view</field>
         <field name="model">pull.request</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="title" />
                 <field name="repo_id" />
                 <field name="module_ids" widget="many2many_tags" />
@@ -26,10 +25,9 @@
                     string="Open"
                     icon="fa-arrow-right"
                 />
-            </tree>
+            </list>
         </field>
     </record>
-
 
     <record id="pull_request_form_view" model="ir.ui.view">
         <field name="name">pull.request.form.view</field>
@@ -75,7 +73,7 @@
                     </group>
                     <group name="pr_info">
                         <group>
-                        <field name="module_ids" widget="many2many_tags" />
+                            <field name="module_ids" widget="many2many_tags" />
                         </group>
                     </group>
                 </sheet>
@@ -168,7 +166,7 @@
         <field name="name">Pull Request</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">pull.request</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="pull_request_search_view" />
         <field name="context">{'search_default_opened': 1}</field>
     </record>
@@ -180,5 +178,4 @@
         action="pull_request_action"
         sequence="2"
     />
-
 </odoo>

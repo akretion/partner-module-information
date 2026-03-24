@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-
     <record id="module_repo_form_view" model="ir.ui.view">
         <field name="name">module.repo.form.view</field>
         <field name="model">module.repo</field>
@@ -19,7 +18,7 @@
                         <button
                             name="%(module_info_partner.module_information_action)d"
                             type="action"
-                            context="{'search_default_repo_id': active_id}"
+                            context="{'search_default_repo_id': id}"
                             icon="fa-globe icon"
                         >
                             <field
@@ -58,5 +57,4 @@
             </search>
         </field>
     </record>
-
 </odoo>
