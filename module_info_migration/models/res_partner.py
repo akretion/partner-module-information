@@ -36,6 +36,6 @@ class ResPartner(models.Model):
             "res_model": "module.partner",
             "name": f"Migration {self.name}",
             "views": [],
-            "view_mode": "tree,form",
+            "view_mode": "list,form",
             "domain": [["partner_id", "=", self.id]],
         }

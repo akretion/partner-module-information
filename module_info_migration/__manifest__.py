@@ -1,6 +1,6 @@
 {
     "name": "Module Info Migration",
-    "version": "16.0.1.0.0",
+    "version": "18.0.1.0.0",
     "license": "AGPL-3",
     "author": "Akretion, Odoo Community Association (OCA)",
     "website": "https://github.com/akretion/partner-module-information",
@@ -8,6 +8,7 @@
     "depends": [
         "module_info_partner",
         "module_info_import_odoo_repository",
+        "module_info_pull_request",
         "project",
         "project_task_stage_state",
     ],

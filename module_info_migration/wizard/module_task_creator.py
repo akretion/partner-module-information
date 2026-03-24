@@ -1,4 +1,4 @@
-from odoo import _, exceptions, fields, models
+from odoo import exceptions, fields, models
 from odoo.exceptions import UserError
 
 
@@ -11,7 +11,7 @@ class ModuleInformation(models.TransientModel):
         partners = modules.mapped("partner_id")
         if len(partners) > 1:
             raise exceptions.UserError(
-                _("You should create task for one partner at a time")
+                self.env._("You should create task for one partner at a time")
             )
         return partners
 
@@ -27,7 +27,7 @@ class ModuleInformation(models.TransientModel):
         module_partner_ids = self.env.context.get("active_ids")
         module_partners = self.env["module.partner"].browse(module_partner_ids)
         if module_partners.task_ids:
-            raise UserError(_("Some module already have a task"))
+            raise UserError(self.env._("Some module already have a task"))
         task_vals = {
             "project_id": self.project_id.id,
             "name": self.task_name,

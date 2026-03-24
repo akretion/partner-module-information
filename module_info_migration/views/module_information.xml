@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-
     <record id="module_information_form_view" model="ir.ui.view">
         <field name="model">module.information</field>
         <field
@@ -13,5 +12,4 @@
             </field>
         </field>
     </record>
-
 </odoo>

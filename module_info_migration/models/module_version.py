@@ -39,7 +39,7 @@ class ModuleVersion(models.Model):
                         try:
                             pr_number = int(pr_number)
                         except Exception:
-                            _logger.warning("Pr is missing, ignore %s" % pr_info)
+                            _logger.warning(f"Pr is missing, ignore {pr_info}")
                             continue
                         repo = self.module_id.repo_id
                         pr = self.env["pull.request"].search(

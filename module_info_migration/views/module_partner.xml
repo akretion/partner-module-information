@@ -16,7 +16,7 @@
                     <field name="task_ids" nolabel="1" colspan="2" />
                     <field name="missing_commit_html" nolabel="1" colspan="2" />
                     <field name="missing_pr_ids" nolabel="1" colspan="2">
-                        <tree>
+                        <list>
                             <field name="pr_id" />
                             <field name="title" />
                             <field name="url" widget="url" />
@@ -25,24 +25,28 @@
                             <button
                                 name="set_to_analyse"
                                 type="object"
+                                title="To Analyse"
                                 class="btn-secondary fa fa-list"
                             />
                             <button
                                 name="set_todo"
                                 type="object"
+                                title="Todo"
                                 class="btn-primary fa fa-calendar"
                             />
                             <button
                                 name="set_ignore"
                                 type="object"
+                                title="Ignore"
                                 class="btn-danger fa fa-trash"
                             />
                             <button
                                 name="set_useless"
                                 type="object"
+                                title="Useless"
                                 class="btn-warning fa fa-trash"
                             />
-                        </tree>
+                        </list>
                     </field>
                 </group>
             </group>
@@ -60,7 +64,7 @@
                     icon="fa-github"
                     type="object"
                     title="Open PR"
-                    attrs="{'invisible': [('migration_status', '!=', 'ongoing_pr')]}"
+                    invisible="migration_status != 'ongoing_pr'"
                 />
                 <field name="task_ids" widget="many2many_tags" />
                 <button
@@ -68,7 +72,7 @@
                     icon="fa-folder-open"
                     type="object"
                     title="Open Tasks"
-                    attrs="{'invisible': [('task_ids', '=', [])]}"
+                    invisible="not task_ids"
                 />
             </field>
         </field>
@@ -100,5 +104,4 @@
             </filter>
         </field>
     </record>
-
 </odoo>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
-
     <record id="module_task_creator_form_view" model="ir.ui.view">
         <field name="name">module.task.creator.form</field>
         <field name="model">module.task.creator</field>
@@ -13,15 +12,15 @@
                 </group>
                 <footer>
                     <button
-                        name="validate"
-                        string="Confirm"
-                        type="object"
-                        class="oe_highlight"
-                    />
+                    name="validate"
+                    string="Confirm"
+                    type="object"
+                    class="oe_highlight"
+                />
                     or
                     <button string="Cancel" class="oe_link" special="cancel" />
                  </footer>
-        </form>
+            </form>
         </field>
     </record>
 
@@ -32,5 +31,4 @@
         <field name="target">new</field>
         <field name="binding_model_id" ref="module_info_partner.model_module_partner" />
     </record>
-
 </odoo>
