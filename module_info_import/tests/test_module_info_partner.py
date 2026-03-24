@@ -35,7 +35,7 @@ class TestinfoImport(TransactionCase):
                     for module in modules:
                         if module not in module_list:
                             module_list.append(module)
-
+            self.env["module.information"].flush_model(["available_version_ids"])
             self.assertEqual(
                 len(module_list),
                 self.env["module.information"].search_count(
