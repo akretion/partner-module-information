@@ -2,14 +2,14 @@ import logging
 
 import requests
 
-from odoo import _, api, fields, models, release
+from odoo import api, fields, models, release
 from odoo.exceptions import UserError
 from odoo.modules.module import get_module_path
 
 _logger = logging.getLogger(__name__)
 
 
-ERROR_MESSAGE = _("There is an issue with module synchronization")
+ERROR_MESSAGE = "There is an issue with module synchronization"
 
 
 class IrModuleModule(models.Model):
@@ -52,7 +52,7 @@ class IrModuleModule(models.Model):
             )
         except Exception as e:
             _logger.error("Error when calling odoo %s", e)
-            raise UserError(ERROR_MESSAGE) from e
+            raise UserError(self.env._(ERROR_MESSAGE)) from e
         data = res.json()
         if isinstance(data, dict) and data.get("code", 0) >= 400:
             _logger.error(
@@ -60,7 +60,7 @@ class IrModuleModule(models.Model):
                 data.get("name"),
                 data.get("description"),
             )
-            raise UserError(ERROR_MESSAGE)
+            raise UserError(self.env._(ERROR_MESSAGE))
         return data
 
     def _compute_is_custom_module(self):
