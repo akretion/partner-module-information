@@ -1,0 +1,19 @@
+[project]
+name = "odoo-addons-akretion-partner-module-information"
+version = "18.0.20260324.0"
+dependencies = [
+    "odoo-addon-module_info_import==18.0.*",
+    "odoo-addon-module_info_import_odoo_repository==18.0.*",
+    "odoo-addon-module_info_migration==18.0.*",
+    "odoo-addon-module_info_partner==18.0.*",
+    "odoo-addon-module_info_pull_request==18.0.*",
+    "odoo-addon-module_info_pull_request_migration==18.0.*",
+    "odoo-addon-module_info_pull_request_task_link==18.0.*",
+    "odoo-addon-module_info_pull_request_timesheet==18.0.*",
+    "odoo-addon-module_info_push==18.0.*",
+]
+classifiers=[
+    "Programming Language :: Python",
+    "Framework :: Odoo",
+    "Framework :: Odoo :: 18.0",
+]
