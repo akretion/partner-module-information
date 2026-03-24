@@ -5,7 +5,7 @@
 {
     "name": "Module Info Pull Request Migration",
     "summary": "Link pull request to migration task",
-    "version": "16.0.1.0.0",
+    "version": "18.0.1.0.0",
     "development_status": "Alpha",
     "category": "Uncategorized",
     "website": "https://github.com/akretion/partner-module-information",
