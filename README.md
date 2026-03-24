@@ -1,10 +1,10 @@
-[![Support the OCA](https://odoo-community.org/readme-banner-image)](https://odoo-community.org/get-involved?utm_source=repo-readme)
+
 
 # Partner Module Information
 <!-- /!\ Non OCA Context : Set here the badge of your runbot / runboat instance. -->
-[![Pre-commit Status](https://github.com/akretion/partner-module-information/actions/workflows/pre-commit.yml/badge.svg?branch=16.0)](https://github.com/akretion/partner-module-information/actions/workflows/pre-commit.yml?query=branch%3A16.0)
-[![Build Status](https://github.com/akretion/partner-module-information/actions/workflows/test.yml/badge.svg?branch=16.0)](https://github.com/akretion/partner-module-information/actions/workflows/test.yml?query=branch%3A16.0)
-[![codecov](https://codecov.io/gh/akretion/partner-module-information/branch/16.0/graph/badge.svg)](https://codecov.io/gh/akretion/partner-module-information)
+[![Pre-commit Status](https://github.com/akretion/partner-module-information/actions/workflows/pre-commit.yml/badge.svg?branch=18.0)](https://github.com/akretion/partner-module-information/actions/workflows/pre-commit.yml?query=branch%3A18.0)
+[![Build Status](https://github.com/akretion/partner-module-information/actions/workflows/test.yml/badge.svg?branch=18.0)](https://github.com/akretion/partner-module-information/actions/workflows/test.yml?query=branch%3A18.0)
+[![codecov](https://codecov.io/gh/akretion/partner-module-information/branch/18.0/graph/badge.svg)](https://codecov.io/gh/akretion/partner-module-information)
 <!-- /!\ Non OCA Context : Set here the badge of your translation instance. -->
 
 <!-- /!\ do not modify above this line -->
