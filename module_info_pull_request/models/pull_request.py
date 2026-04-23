@@ -42,6 +42,7 @@ class PullRequest(models.Model):
             ("waiting_review", "Waiting Review"),
             ("need_fix", "Need Fix"),
             ("approved", "Approved"),
+            ("approved_internal", "Approved by internal user"),
             ("done", "Merged"),
             ("cancel", "Cancel"),
             ("dead", "Dead"),
@@ -56,7 +57,7 @@ class PullRequest(models.Model):
     orga = fields.Char(index=True, readonly=True)
     need_review = fields.Boolean(string="Review requested")
     author_user_id = fields.Many2one(
-        "res.users", compute="_compute_author_user_id", store=True
+        "res.users", compute="_compute_author_user_id", store=True, index=True
     )
     waiting_reviewer_ids = fields.Many2many(
         "github.user",
@@ -87,6 +88,11 @@ class PullRequest(models.Model):
         comodel_name="res.partner",
         ondelete="set null",
         string="Customer",
+    )
+    approved_internal_reviewer_ids = fields.Many2many(
+        comodel_name="github.user",
+        compute="_compute_approved_internal_reviewer_ids",
+        string="Approving Internal Reviewers",
     )
 
     _sql_constraints = [
@@ -146,6 +152,16 @@ class PullRequest(models.Model):
             record.author_user_id = gh_users.filtered(
                 lambda s, author=record.author: s.login == author
             ).user_id
+
+    @api.depends("approved_reviewer_ids")
+    def _compute_approved_internal_reviewer_ids(self):
+        internal_reviewers = self.env["res.users"].search(
+            [("github_user_ids", "!=", False)]
+        )
+        for record in self:
+            record.approved_internal_reviewer_ids = (
+                record.approved_reviewer_ids & internal_reviewers.github_user_ids
+            )
 
     def _inverse_is_dead(self):
         for record in self:
@@ -271,6 +287,8 @@ class PullRequest(models.Model):
         for record in self:
             if record.state == "cancel" and record.is_dead:
                 record.state = "dead"
+            elif record.state == "approved" and record.approved_internal_reviewer_ids:
+                record.state = "approved_internal"
 
     # TODO review this behaviour of module version
     def _update_module_version(self):

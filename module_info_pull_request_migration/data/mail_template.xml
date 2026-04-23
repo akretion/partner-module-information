@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Akretion (https://www.akretion.com).
+     @author Sébastien Alix <sebastien.alix@akretion.com>
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <template id="template_pull_requests_by_project">
+        <table class="table table-bordered w-auto" t-if="prs_by_project">
+        <t t-foreach="prs_by_project" t-as="project">
+            <t t-set="pull_requests" t-value="project_value" />
+
+            <tr style="background-color: #c5d7f2;">
+                <th colspan="4" t-out="project.name.upper()" />
+            </tr>
+
+            <tr style="background-color: #d7d8da">
+                <th>Task</th>
+                <th>PR</th>
+                <th>State</th>
+                <th>Notes</th>
+            </tr>
+
+            <tr t-foreach="pull_requests" t-as="pr">
+                <td>[<span t-out="pr.task_id.id" />]</td>
+                <td>
+                    [<span t-out="pr.id" />]
+                    <a t-att-href="pr.url" target="_blank" class="oe_link">
+                        <span t-out="pr.repo_id.organization" />/<span
+                                t-out="pr.repo_id.name"
+                            />#<span t-out="pr.number" />:
+                        <span t-out="pr.title" />
+                    </a>
+                </td>
+                <td>
+                    <span t-out="pr.state" />
+                </td>
+                <td>
+                    <span t-raw="pr._generate_template_notes(digest_type, object)" />
+                </td>
+            </tr>
+        </t>
+        </table>
+    </template>
+
+    <record id="mail_template_pull_requests_migration_digest" model="mail.template">
+        <field name="name">Pull Requests migration digest</field>
+        <field name="model_id" ref="model_res_users" />
+        <field
+            name="subject"
+        >Some Pull Requests require some love {{ object.display_name }}</field>
+        <field name="partner_to">{{ object.partner_id.id }}</field>
+        <field name="description">Pull Requests migration digest</field>
+        <field name="lang">{{ object.lang }}</field>
+        <field name="auto_delete" eval="False" />
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        <p>Hello <t t-out="object.display_name" />,</p>
+
+        <p>Here are the Pull Requests that are waiting for you:</p>
+
+        <!-- Authored -->
+        <t
+                        t-set="prs_by_project"
+                        t-value="object._get_pull_requests_authored_by_project(states=('draft', 'need_fix', 'cancel', 'waiting_review'), migration_only=True)"
+                    />
+        <div t-if="prs_by_project">
+            <h1>As author - In progress</h1>
+            <t
+                            t-call="module_info_pull_request_migration.template_pull_requests_by_project"
+                        >
+                <t t-set="digest_type" t-value="'author'" />
+            </t>
+        </div>
+        <!-- Authored - Approved, waiting for merge -->
+        <t
+                        t-set="prs_by_project"
+                        t-value="object._get_pull_requests_authored_by_project(states=('approved', 'approved_internal'), migration_only=True)"
+                    />
+        <div t-if="prs_by_project">
+            <h1>As author - Approved</h1>
+            <t
+                            t-call="module_info_pull_request_migration.template_pull_requests_by_project"
+                        >
+                <t t-set="digest_type" t-value="'author_approved'" />
+            </t>
+        </div>
+        <!-- First reviewer -->
+        <t
+                        t-set="prs_by_project"
+                        t-value="object._get_pull_requests_for_first_review_by_project(migration_only=True)"
+                    />
+        <div t-if="prs_by_project">
+            <h1>As first reviewer</h1>
+            <t
+                            t-call="module_info_pull_request_migration.template_pull_requests_by_project"
+                        >
+                <t t-set="digest_type" t-value="'first_reviewer'" />
+            </t>
+        </div>
+        <!-- Second reviewer -->
+        <t
+                        t-set="prs_by_project"
+                        t-value="object._get_pull_requests_for_second_review_by_project(migration_only=True)"
+                    />
+        <div t-if="prs_by_project">
+            <h1>As second reviewer</h1>
+            <t
+                            t-call="module_info_pull_request_migration.template_pull_requests_by_project"
+                        >
+                <t t-set="digest_type" t-value="'second_reviewer'" />
+            </t>
+        </div>
+
+        <p>Happy contributions,</p>
+    </p>
+</div>
+        </field>
+    </record>
+
+</odoo>
