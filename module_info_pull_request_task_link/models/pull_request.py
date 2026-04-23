@@ -79,3 +79,10 @@ class PullRequest(models.Model):
         for line in self:
             if line.project_id != line.task_id.project_id:
                 line.task_id = False
+
+    def _update_state(self):
+        res = super()._update_state()
+        for record in self:
+            if record.state == "need_reviewer" and record.internal_reviewer_ids:
+                record.state = "waiting_review"
+        return res
