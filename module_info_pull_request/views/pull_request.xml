@@ -49,7 +49,7 @@
                     <field
                         name="state"
                         widget="statusbar"
-                        statusbar_visible="draft,need_reviewer,waiting_review,approved,done"
+                        statusbar_visible="draft,need_reviewer,waiting_review,approved,approved_internal,done"
                     />
                 </header>
                 <sheet>
@@ -101,12 +101,12 @@
                 <filter
                     name="opened"
                     string="Opened PR"
-                    domain="[('state', 'not in', ['cancel', 'done'])]"
+                    domain="[('state', 'not in', ['dead', 'done'])]"
                 />
                 <filter
                     name="closed"
                     string="Closed PR"
-                    domain="[('state', 'in', ['cancel', 'done'])]"
+                    domain="[('state', 'in', ['dead', 'done'])]"
                 />
                 <separator />
                 <filter

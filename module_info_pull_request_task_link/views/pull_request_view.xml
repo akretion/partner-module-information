@@ -27,6 +27,23 @@
             ref="module_info_pull_request.pull_request_search_view"
         />
         <field name="arch" type="xml">
+            <filter name="mypr" position="after">
+                <filter
+                    name="as_author"
+                    string="As Author"
+                    domain="[('as_author', '=', True)]"
+                />
+                <filter
+                    name="as_first_reviewer"
+                    string="As First Reviewer"
+                    domain="[('as_first_reviewer', '=', True)]"
+                />
+                <filter
+                    name="as_second_reviewer"
+                    string="As Second Reviewer"
+                    domain="[('as_second_reviewer', '=', True)]"
+                />
+            </filter>
             <filter name="my_waiting_review" position="attributes">
                 <attribute
                     name="domain"
