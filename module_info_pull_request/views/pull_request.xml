@@ -68,6 +68,10 @@
                         </group>
                         <group>
                             <field name="state" />
+                            <field
+                                name="is_dead"
+                                attrs="{'invisible': [('state', '!=', 'cancel')]}"
+                            />
                             <field name="version_id" />
                             <field name="url" widget="url" />
                             <field name="number" />

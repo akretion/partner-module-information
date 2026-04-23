@@ -26,6 +26,14 @@ class PullRequest(models.Model):
         "module.information", string="Related Modules", readonly=True
     )
     version_id = fields.Many2one("odoo.version", readonly=True, index=True)
+    is_dead = fields.Boolean(
+        inverse="_inverse_is_dead",
+        help=(
+            "A PR could be canceled automatically, and could be re-opened later."
+            ' But PR canceled on purpose can be flagged as "dead", so we don\'t'
+            " get back on it."
+        ),
+    )
     state = fields.Selection(
         selection=[
             ("draft", "Draft"),
@@ -35,6 +43,7 @@ class PullRequest(models.Model):
             ("approved", "Approved"),
             ("done", "Merged"),
             ("cancel", "Cancel"),
+            ("dead", "Dead"),
         ],
         index=True,
         readonly=True,
@@ -81,6 +90,10 @@ class PullRequest(models.Model):
             record.author_user_id = gh_users.filtered(
                 lambda s, author=record.author: s.login == author
             ).user_id
+
+    def _inverse_is_dead(self):
+        for record in self:
+            record._update_state()
 
     def _get_module_from_pr(self, url, modules):
         git_token = (
@@ -194,7 +207,14 @@ class PullRequest(models.Model):
 
     def _post_update(self):
         for record in self:
+            record._update_state()
             record._update_module_version()
+
+    def _update_state(self):
+        """Fix/update PR state based on internal data."""
+        for record in self:
+            if record.state == "cancel" and record.is_dead:
+                record.state = "dead"
 
     # TODO review this behaviour of module version
     def _update_module_version(self):
