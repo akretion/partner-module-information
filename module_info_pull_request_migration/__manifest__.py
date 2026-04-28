@@ -19,6 +19,8 @@
         "module_info_pull_request_task_link",
         "module_info_migration",
     ],
-    "data": [],
+    "data": [
+        "views/res_partner.xml",
+    ],
     "demo": [],
 }
