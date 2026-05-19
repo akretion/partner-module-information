@@ -4,7 +4,8 @@ from datetime import date
 
 import requests
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 from odoo.fields import Command
 
 from ..tools import naive_dt
@@ -26,6 +27,14 @@ class PullRequest(models.Model):
         "module.information", string="Related Modules", readonly=True
     )
     version_id = fields.Many2one("odoo.version", readonly=True, index=True)
+    is_dead = fields.Boolean(
+        inverse="_inverse_is_dead",
+        help=(
+            "A PR could be canceled automatically, and could be re-opened later."
+            ' But PR canceled on purpose can be flagged as "dead", so we don\'t'
+            " get back on it."
+        ),
+    )
     state = fields.Selection(
         selection=[
             ("draft", "Draft"),
@@ -33,8 +42,10 @@ class PullRequest(models.Model):
             ("waiting_review", "Waiting Review"),
             ("need_fix", "Need Fix"),
             ("approved", "Approved"),
+            ("approved_internal", "Approved by internal user"),
             ("done", "Merged"),
             ("cancel", "Cancel"),
+            ("dead", "Dead"),
         ],
         index=True,
         readonly=True,
@@ -46,7 +57,7 @@ class PullRequest(models.Model):
     orga = fields.Char(index=True, readonly=True)
     need_review = fields.Boolean(string="Review requested")
     author_user_id = fields.Many2one(
-        "res.users", compute="_compute_author_user_id", store=True
+        "res.users", compute="_compute_author_user_id", store=True, index=True
     )
     waiting_reviewer_ids = fields.Many2many(
         "github.user",
@@ -63,6 +74,26 @@ class PullRequest(models.Model):
         relation="github_user_pull_request_refused_rel",
         readonly=True,
     )
+    blocked_for_one_week = fields.Boolean(
+        string="Blocked For One Week+",
+        compute="_compute_blocked_for_x",
+        search="_search_blocked_for_one_week",
+    )
+    blocked_for_one_month = fields.Boolean(
+        string="Blocked For One Month+",
+        compute="_compute_blocked_for_x",
+        search="_search_blocked_for_one_month",
+    )
+    partner_id = fields.Many2one(
+        comodel_name="res.partner",
+        ondelete="set null",
+        string="Customer",
+    )
+    approved_internal_reviewer_ids = fields.Many2many(
+        comodel_name="github.user",
+        compute="_compute_approved_internal_reviewer_ids",
+        string="Approving Internal Reviewers",
+    )
 
     _sql_constraints = [
         (
@@ -71,6 +102,46 @@ class PullRequest(models.Model):
             "the pair pr number and repo must be unique",
         ),
     ]
+
+    @api.depends("state")
+    def _compute_blocked_for_x(self):
+        states = ("draft", "need_fix", "waiting_review", "cancel")
+        one_week_ago = fields.Datetime.subtract(fields.Datetime.now(), weeks=1)
+        one_month_ago = fields.Datetime.subtract(fields.Datetime.now(), months=1)
+        for record in self:
+            record.blocked_for_one_week = (
+                record.state in states and record.date_updated <= one_week_ago
+            )
+            record.blocked_for_one_month = (
+                record.state in states and record.date_updated <= one_month_ago
+            )
+
+    def _search_blocked_for_x(self, date):
+        states = ("draft", "need_fix", "waiting_review", "cancel")
+        return [
+            ("state", "in", states),
+            ("date_updated", "<=", date),
+        ]
+
+    def _search_blocked_for_one_week(self, operator, value):
+        if operator != "=":
+            raise UserError(_("Operation not supported"))
+        if not value:
+            raise UserError(_("False value not supported"))
+        one_week_ago = fields.Datetime.subtract(fields.Datetime.now(), weeks=1)
+        one_month_ago = fields.Datetime.subtract(fields.Datetime.now(), months=1)
+        domain = self._search_blocked_for_x(one_week_ago)
+        # Excluse PRs blocked for one month
+        domain += [("date_updated", ">=", one_month_ago)]
+        return domain
+
+    def _search_blocked_for_one_month(self, operator, value):
+        if operator != "=":
+            raise UserError(_("Operation not supported"))
+        if not value:
+            raise UserError(_("False value not supported"))
+        one_month_ago = fields.Datetime.subtract(fields.Datetime.now(), months=1)
+        return self._search_blocked_for_x(one_month_ago)
 
     # TODO in next version replace the author char by
     # an m2o author_id (github.user)
@@ -81,6 +152,20 @@ class PullRequest(models.Model):
             record.author_user_id = gh_users.filtered(
                 lambda s, author=record.author: s.login == author
             ).user_id
+
+    @api.depends("approved_reviewer_ids")
+    def _compute_approved_internal_reviewer_ids(self):
+        internal_reviewers = self.env["res.users"].search(
+            [("github_user_ids", "!=", False)]
+        )
+        for record in self:
+            record.approved_internal_reviewer_ids = (
+                record.approved_reviewer_ids & internal_reviewers.github_user_ids
+            )
+
+    def _inverse_is_dead(self):
+        for record in self:
+            record._update_state()
 
     def _get_module_from_pr(self, url, modules):
         git_token = (
@@ -194,7 +279,16 @@ class PullRequest(models.Model):
 
     def _post_update(self):
         for record in self:
+            record._update_state()
             record._update_module_version()
+
+    def _update_state(self):
+        """Fix/update PR state based on internal data."""
+        for record in self:
+            if record.state == "cancel" and record.is_dead:
+                record.state = "dead"
+            elif record.state == "approved" and record.approved_internal_reviewer_ids:
+                record.state = "approved_internal"
 
     # TODO review this behaviour of module version
     def _update_module_version(self):
