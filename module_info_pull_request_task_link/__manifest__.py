@@ -6,7 +6,7 @@
 {
     "name": "Module Info Pull Request Task Link",
     "summary": "Allow to link PR to a task",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "development_status": "Alpha",
     "category": "Uncategorized",
     "website": "https://github.com/akretion/partner-module-information",
@@ -21,6 +21,7 @@
         "project_reviewer",
     ],
     "data": [
+        "views/project_project_view.xml",
         "views/project_task_view.xml",
         "views/pull_request_view.xml",
     ],

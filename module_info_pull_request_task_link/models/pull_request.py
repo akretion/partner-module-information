@@ -37,7 +37,39 @@ class PullRequest(models.Model):
             "review"
         ),
     )
-
+    internal_first_reviewer_ids = fields.Many2many(
+        comodel_name="res.users",
+        relation="pull_request_first_internal_reviewer_rel",
+        column1="pull_request_id",
+        column2="internal_reviewer_id",
+        compute="_compute_internal_first_and_second_reviewer_ids",
+        store=True,
+        string="Internal First Reviewers",
+        help="First reviewers are those doing the first reviews.",
+    )
+    internal_second_reviewer_ids = fields.Many2many(
+        comodel_name="res.users",
+        relation="pull_request_second_internal_reviewer_rel",
+        column1="pull_request_id",
+        column2="internal_reviewer_id",
+        compute="_compute_internal_first_and_second_reviewer_ids",
+        store=True,
+        string="Internal Second Reviewers",
+        help=(
+            "Second reviewers are those approving for good the PR."
+            " They come after first reviewers."
+        ),
+    )
+    waiting_for_first_reviewers = fields.Many2many(
+        comodel_name="github.user",
+        compute="_compute_waiting_for_reviewers",
+        string="Waiting for first reviewers",
+    )
+    waiting_for_second_reviewers = fields.Many2many(
+        comodel_name="github.user",
+        compute="_compute_waiting_for_reviewers",
+        string="Waiting for second reviewers",
+    )
     all_waiting_reviewer_ids = fields.Many2many(
         "github.user",
         compute="_compute_all_waiting_reviewer_ids",
@@ -46,6 +78,41 @@ class PullRequest(models.Model):
         store=True,
         help="This include internal reviewer + github reviewer",
     )
+    partner_id = fields.Many2one(
+        # Override field from 'module_info_pull_request'
+        related="project_id.partner_id",
+        store=True,
+    )
+    as_author = fields.Boolean(
+        compute="_compute_as_x",
+        search="_search_as_author",
+        help="Technical field to filter PRs.",
+    )
+    as_first_reviewer = fields.Boolean(
+        compute="_compute_as_x",
+        search="_search_as_first_reviewer",
+        help="Technical field to filter PRs.",
+    )
+    as_second_reviewer = fields.Boolean(
+        compute="_compute_as_x",
+        search="_search_as_second_reviewer",
+        help="Technical field to filter PRs.",
+    )
+
+    def _compute_as_x(self):
+        for record in self:
+            record.as_author = False
+            record.as_first_reviewer = False
+            record.as_second_reviewer = False
+
+    def _search_as_author(self, operator, value):
+        return self.env.user._get_pull_requests_authored_domain()
+
+    def _search_as_first_reviewer(self, operator, value):
+        return self.env.user._get_pull_requests_for_first_review_domain()
+
+    def _search_as_second_reviewer(self, operator, value):
+        return self.env.user._get_pull_requests_for_second_review_domain()
 
     @api.depends(
         "waiting_reviewer_ids",
@@ -79,3 +146,34 @@ class PullRequest(models.Model):
         for line in self:
             if line.project_id != line.task_id.project_id:
                 line.task_id = False
+
+    @api.depends("internal_reviewer_ids", "project_id.internal_second_reviewer_ids")
+    def _compute_internal_first_and_second_reviewer_ids(self):
+        for record in self:
+            record.internal_first_reviewer_ids = (
+                record.internal_reviewer_ids
+                - record.project_id.internal_second_reviewer_ids
+            )
+            record.internal_second_reviewer_ids = (
+                record.internal_reviewer_ids
+                & record.project_id.internal_second_reviewer_ids
+            )
+
+    @api.depends("all_waiting_reviewer_ids", "internal_first_reviewer_ids")
+    def _compute_waiting_for_reviewers(self):
+        for record in self:
+            record.waiting_for_first_reviewers = (
+                record.all_waiting_reviewer_ids
+                & record.internal_first_reviewer_ids.github_user_ids
+            )
+            record.waiting_for_second_reviewers = (
+                record.all_waiting_reviewer_ids
+                & record.internal_second_reviewer_ids.github_user_ids
+            )
+
+    def _update_state(self):
+        res = super()._update_state()
+        for record in self:
+            if record.state == "need_reviewer" and record.internal_reviewer_ids:
+                record.state = "waiting_review"
+        return res
