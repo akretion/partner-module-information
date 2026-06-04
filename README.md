@@ -39,7 +39,7 @@ addon | version | maintainers | summary
 [module_info_partner](module_info_partner/) | 18.0.1.0.0 |  | Information about odoo modules used by your partners
 [module_info_pull_request](module_info_pull_request/) | 18.0.1.0.0 |  | Information about Pull Request state on modules
 [module_info_pull_request_migration](module_info_pull_request_migration/) | 18.0.1.0.0 |  | Link pull request to migration task
-[module_info_pull_request_task_link](module_info_pull_request_task_link/) | 18.0.1.0.0 |  | Allow to link PR to a task
+[module_info_pull_request_task_link](module_info_pull_request_task_link/) | 18.0.1.1.0 |  | Allow to link PR to a task
 [module_info_pull_request_timesheet](module_info_pull_request_timesheet/) | 18.0.1.0.0 |  | Add timesheet to Pull request
 [module_info_push](module_info_push/) | 18.0.1.0.0 |  | Send information about installed module in the database
 
