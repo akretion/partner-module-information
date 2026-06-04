@@ -6,7 +6,7 @@
     "author": "Akretion, Odoo Community Association (OCA)",
     "website": "https://github.com/akretion/partner-module-information",
     "category": "Tools",
-    "depends": ["queue_job", "module_info_partner"],
+    "depends": ["hr", "queue_job", "module_info_partner"],
     "data": [
         "data/ir_cron.xml",
         "data/ir_config_parameter.xml",
