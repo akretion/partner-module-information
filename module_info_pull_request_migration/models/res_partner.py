@@ -41,7 +41,7 @@ class ResPartner(models.Model):
             "res_model": "pull.request",
             "name": name,
             "views": [],
-            "view_mode": "tree,form",
+            "view_mode": "list,form",
             "domain": self._get_pull_request_domain(),
             "context": ctx,
         }
