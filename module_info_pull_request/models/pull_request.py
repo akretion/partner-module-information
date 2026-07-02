@@ -288,8 +288,6 @@ class PullRequest(models.Model):
         for record in self:
             if record.state == "cancel" and record.is_dead:
                 record.state = "dead"
-            elif record.state == "approved" and record.approved_internal_reviewer_ids:
-                record.state = "approved_internal"
 
     # TODO review this behaviour of module version
     def _update_module_version(self):
