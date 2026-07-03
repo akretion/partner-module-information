@@ -176,4 +176,9 @@ class PullRequest(models.Model):
         for record in self:
             if record.state == "need_reviewer" and record.internal_reviewer_ids:
                 record.state = "waiting_review"
+            if (
+                record.state == "waiting_review"
+                and record.approved_internal_reviewer_ids
+            ):
+                record.state = "approved_internal"
         return res
