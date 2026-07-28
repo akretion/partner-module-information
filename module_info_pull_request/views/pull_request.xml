@@ -119,7 +119,31 @@
                     string="V15"
                     domain="[('version_id', '=', '15.0')]"
                 />
-                <filter name="v16" string="V16" domain="" />
+                <filter
+                    name="v16"
+                    string="V16"
+                    domain="[('version_id', '=', '16.0')]"
+                />
+                <filter
+                    name="v17"
+                    string="V17"
+                    domain="[('version_id', '=', '17.0')]"
+                />
+                <filter
+                    name="v18"
+                    string="V18"
+                    domain="[('version_id', '=', '18.0')]"
+                />
+                <filter
+                    name="v19"
+                    string="V19"
+                    domain="[('version_id', '=', '19.0')]"
+                />
+                <filter
+                    name="v20+"
+                    string="V20+"
+                    domain="[('version_id.name', '=like', '2%.0')]"
+                />
                 <separator />
                 <filter
                     name="mypr"
